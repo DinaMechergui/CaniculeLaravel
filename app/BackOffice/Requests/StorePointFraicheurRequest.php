@@ -41,6 +41,9 @@ class StorePointFraicheurRequest extends FormRequest
             'longitude' => ['required', 'numeric', 'between:-180,180'],
             'horaires' => ['nullable', 'string', 'max:100'],
             'accessible' => ['boolean'],
+            // Facultatif pour rester rétro-compatible : sans valeur, la
+            // capacité par défaut de la base de données (50) s'applique.
+            'capacite' => ['sometimes', 'required', 'integer', 'min:1', 'max:10000'],
         ];
     }
 
@@ -69,6 +72,10 @@ class StorePointFraicheurRequest extends FormRequest
             'horaires.string' => 'Les horaires doivent être une chaîne de caractères.',
             'horaires.max' => 'Les horaires ne doivent pas dépasser 100 caractères.',
             'accessible.boolean' => 'Le champ accessible doit être vrai ou faux.',
+            'capacite.required' => 'La capacité est obligatoire.',
+            'capacite.integer' => 'La capacité doit être un nombre entier.',
+            'capacite.min' => 'La capacité doit être au minimum de 1 personne.',
+            'capacite.max' => 'La capacité ne doit pas dépasser 10 000 personnes.',
         ];
     }
 }

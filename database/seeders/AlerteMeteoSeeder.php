@@ -130,15 +130,17 @@ class AlerteMeteoSeeder extends Seeder
             $alertesListe = $alertesParCouleur[$niveau->couleur] ?? [];
 
             foreach ($alertesListe as $data) {
-                // Utilise la factory d'AlerteMeteo pour générer les dates et structure, tout en injectant les données réalistes de Tunisie
-                AlerteMeteo::factory()->create([
-                    'niveau_alerte_id' => $niveau->id,
-                    'titre' => $data['titre'],
-                    'message' => $data['message'],
-                    'source' => $data['source'],
-                    'date_debut' => now()->subHours(rand(1, 18)),
-                    'date_fin' => now()->addHours(rand(24, 72)),
-                ]);
+                // firstOrCreate : évite les doublons si le seeder est relancé.
+                AlerteMeteo::firstOrCreate(
+                    ['titre' => $data['titre']],
+                    [
+                        'niveau_alerte_id' => $niveau->id,
+                        'message' => $data['message'],
+                        'source' => $data['source'],
+                        'date_debut' => now()->subHours(rand(1, 18)),
+                        'date_fin' => now()->addHours(rand(24, 72)),
+                    ]
+                );
             }
         }
     }

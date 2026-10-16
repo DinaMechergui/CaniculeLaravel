@@ -18,6 +18,7 @@ use App\FrontOffice\Controllers\PointFraicheurController;
 use App\FrontOffice\Controllers\ProfileController;
 use App\FrontOffice\Controllers\SignalementController;
 use App\Http\Controllers\Front\AlerteMeteoController as FrontAlerteMeteoController;
+use App\Http\Controllers\Front\ReservationController as FrontReservationController;
 use Illuminate\Support\Facades\Route;
 use App\FrontOffice\Controllers\ConseilController;
 
@@ -39,6 +40,45 @@ Route::get('/points-fraicheur/proches', [PointFraicheurController::class, 'proch
     ->name('points-fraicheur.proches');
 Route::get('/points-fraicheur/{pointFraicheur}', [PointFraicheurController::class, 'show'])
     ->name('points-fraicheur.show');
+
+// Module « Réservations » : le client réserve un créneau depuis la fiche du
+// point de fraîcheur (création), puis suit sa réservation via son code.
+Route::get('/points-fraicheur/{pointFraicheur}/reserver', [FrontReservationController::class, 'create'])
+    ->name('reservations.create');
+// Créneaux disponibles d'une journée (JSON, appelé en AJAX par le formulaire).
+Route::get('/points-fraicheur/{pointFraicheur}/creneaux', [FrontReservationController::class, 'creneaux'])
+    ->name('reservations.creneaux');
+Route::post('/reservations', [FrontReservationController::class, 'store'])
+    ->middleware('throttle:10,1')
+    ->name('reservations.store');
+// Assistant de réservation en langage naturel (AJAX).
+Route::post('/reservations/assistant', [FrontReservationController::class, 'assistant'])
+    ->middleware('throttle:20,1')
+    ->name('reservations.assistant');
+// Recherche d'une réservation par code + e-mail (déclarée avant la route
+// avec paramètre {code} pour éviter toute collision d'URL).
+Route::get('/reservations/recherche', [FrontReservationController::class, 'rechercheForm'])
+    ->name('reservations.recherche');
+Route::post('/reservations/recherche', [FrontReservationController::class, 'recherche'])
+    ->name('reservations.recherche.trouver');
+// La contrainte sur le code évite toute collision avec d'éventuelles autres
+// routes « /reservations/.... ».
+Route::get('/reservations/{code}', [FrontReservationController::class, 'show'])
+    ->where('code', '[A-Za-z0-9]{8}')
+    ->name('reservations.show');
+// Annulation d'une réservation depuis le front (par son code).
+Route::post('/reservations/{code}/annuler', [FrontReservationController::class, 'annuler'])
+    ->where('code', '[A-Za-z0-9]{8}')
+    ->name('reservations.annuler');
+// Validation d'arrivée : page ouverte en scannant le QR code du reçu.
+// Le scan marque la réservation comme terminée (check-in) et affiche un reçu.
+Route::get('/reservations/{code}/arrivee', [FrontReservationController::class, 'arrivee'])
+    ->where('code', '[A-Za-z0-9]{8}')
+    ->name('reservations.arrivee');
+// QR code (SVG) menant à la page de suivi de la réservation.
+Route::get('/reservations/{code}/qr', [FrontReservationController::class, 'qr'])
+    ->where('code', '[A-Za-z0-9]{8}')
+    ->name('reservations.qr');
 
 // Module « Conseils » : pages publiques.
 Route::get('/conseils', [ConseilController::class, 'index'])->name('conseils.index');

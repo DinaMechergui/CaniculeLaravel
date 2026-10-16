@@ -16,7 +16,7 @@ class QuartierSeeder extends Seeder
             ['nom' => 'Le Bardo', 'ville' => 'Tunis', 'code_postal' => '2000'],
             ['nom' => 'El Mourouj', 'ville' => 'Ben Arous', 'code_postal' => '2074'],
         ] as $quartier) {
-            Quartier::create($quartier);
+            Quartier::updateOrCreate(['nom' => $quartier['nom']], $quartier);
         }
     }
 }

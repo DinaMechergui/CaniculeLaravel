@@ -46,6 +46,10 @@
                         <div class="col-sm-4 text-muted">Horaires</div>
                         <div class="col-sm-8">{{ $pointFraicheur->horaires ?? '—' }}</div>
                     </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 text-muted">Capacité</div>
+                        <div class="col-sm-8">{{ $pointFraicheur->capacite }} personnes</div>
+                    </div>
                     <div class="row">
                         <div class="col-sm-4 text-muted">Accessible</div>
                         <div class="col-sm-8">

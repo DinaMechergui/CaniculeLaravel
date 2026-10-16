@@ -29,6 +29,11 @@ class SignalementSeeder extends Seeder
         }
 
         foreach ($types as $type) {
+            // Évite de recréer des signalements déjà présents pour ce type.
+            if (Signalement::where('type_signalement_id', $type->id)->exists()) {
+                continue;
+            }
+
             for ($i = 0; $i < 5; $i++) {
                 Signalement::create([
                     'type_signalement_id' => $type->id,

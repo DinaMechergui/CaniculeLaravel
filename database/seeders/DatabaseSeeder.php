@@ -20,25 +20,34 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Administrateur de test.
-        User::factory()->admin()->create([
-            'name' => 'Admin',
-            'email' => 'admin@example.com',
-        ]);
+        // Administrateur de test (ré-exécutable sans erreur de doublon).
+        if (! User::where('email', 'admin@example.com')->exists()) {
+            User::factory()->admin()->create([
+                'name' => 'Admin',
+                'email' => 'admin@example.com',
+            ]);
+        }
 
         // Utilisateur simple de test.
-        User::factory()->create([
-            'name' => 'Utilisateur Test',
-            'email' => 'user@example.com',
-        ]);
+        if (! User::where('email', 'user@example.com')->exists()) {
+            User::factory()->create([
+                'name' => 'Utilisateur Test',
+                'email' => 'user@example.com',
+            ]);
+        }
 
-        // Utilisateurs aléatoires.
-        User::factory(10)->create();
+        // Utilisateurs aléatoires : créés une seule fois.
+        if (User::count() <= 2) {
+            User::factory(10)->create();
+        }
 
         // Parents avant enfants pour chaque module.
         $this->call([
             TypePointSeeder::class,
             PointFraicheurSeeder::class,
+            ReservationSeeder::class,
+            PrevisionSeeder::class,
+            DashboardSeeder::class,
             QuartierSeeder::class,
             CoupureSeeder::class,
             NiveauAlerteSeeder::class,
