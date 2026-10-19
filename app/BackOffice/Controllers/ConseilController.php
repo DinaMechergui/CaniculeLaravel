@@ -4,6 +4,7 @@ namespace App\BackOffice\Controllers;
 
 use App\BackOffice\Requests\StoreConseilRequest;
 use App\BackOffice\Requests\UpdateConseilRequest;
+use App\BackOffice\Requests\GenererConseilRequest;
 use App\Http\Controllers\Controller;
 use App\Models\CategorieConseil;
 use App\Models\Conseil;
@@ -48,6 +49,8 @@ class ConseilController extends Controller
 
     public function show(Conseil $conseil): View
     {
+        $conseil->load(['categorie', 'campagnes']);
+
         return view('back.conseils.show', compact('conseil'));
     }
 
@@ -72,8 +75,14 @@ class ConseilController extends Controller
 
     public function destroy(Conseil $conseil): RedirectResponse
     {
-        $conseil->delete();
+        // Un conseil diffusé par des campagnes ne peut pas être supprimé.
+        if ($conseil->campagnes()->exists()) {
+            return redirect()
+                ->route('admin.conseils.index')
+                ->with('error', 'Impossible de supprimer ce conseil : il est utilisé par une ou plusieurs campagnes.');
+        }
 
+        $conseil->delete();
         return redirect()
             ->route('admin.conseils.index')
             ->with('success', 'Le conseil a été supprimé avec succès.');
@@ -82,12 +91,9 @@ class ConseilController extends Controller
     /**
      * Génération du contenu d'un conseil par IA.
      */
-    public function generer(Request $request): JsonResponse
+    public function generer(GenererConseilRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'titre' => ['required', 'string', 'max:150'],
-            'categorie' => ['nullable', 'string', 'max:100'],
-        ]);
+        $data = $request->validated();
 
         $cle = config('services.openrouter.conseil_key') ?: config('services.openrouter.key');
         $model = config('services.openrouter.conseil_model') ?: config('services.openrouter.model') ?: 'openrouter/free';

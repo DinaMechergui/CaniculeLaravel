@@ -48,6 +48,7 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Nunito', sans-serif; color: var(--ve-dark); }
   padding: 0 40px;
   height: 72px;
 }
+.ve-logo { flex: 0 0 auto; }
 /* Logo */
 .ve-logo a { display:flex; align-items:center; gap:10px; text-decoration:none; }
 .ve-logo-icon {
@@ -62,11 +63,12 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Nunito', sans-serif; color: var(--ve-dark); }
 .ve-logo-text strong { color: var(--ve-gold); font-weight:900; }
 
 /* Nav links */
-.ve-nav ul { list-style:none; margin:0; padding:0; display:flex; gap:6px; }
+.ve-nav { flex: 1 1 auto; min-width: 0; margin: 0 18px; }
+.ve-nav ul { list-style:none; margin:0; padding:0; display:flex; justify-content:center; gap:2px; }
 .ve-nav ul li { position:relative; }
 .ve-nav ul li a {
-  display:block; padding:8px 14px; color:rgba(255,255,255,0.8);
-  font-size:14px; font-weight:500; text-decoration:none;
+  display:block; padding:8px 9px; color:rgba(255,255,255,0.8);
+  font-size:13px; font-weight:500; text-decoration:none;
   border-radius:6px; transition:var(--ve-trans);
 }
 .ve-nav ul li a:hover, .ve-nav ul li a.active { color:#fff; background:rgba(212,160,23,0.15); }
@@ -93,6 +95,7 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Nunito', sans-serif; color: var(--ve-dark); }
   font-weight:700; font-size:14px; text-decoration:none;
   transition:var(--ve-trans);
 }
+.ve-nav-cta { display:flex; align-items:center; gap:10px; flex:0 0 auto; }
 .ve-cta-btn:hover { background:var(--ve-gold2); transform:translateY(-1px); }
 
 /* Mobile toggle */
@@ -398,6 +401,13 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Nunito', sans-serif; color: var(--ve-dark); }
   .ve-services-grid { grid-template-columns:repeat(2,1fr); }
   .ve-counter-grid { grid-template-columns:repeat(2,1fr); }
   .ve-testi-grid { grid-template-columns:repeat(2,1fr); }
+}
+@media (min-width:992px) and (max-width:1450px) {
+  .ve-nav-wrap { padding:0 22px; }
+  .ve-logo-text { font-size:18px; }
+  .ve-nav { margin:0 8px; }
+  .ve-nav ul li a { padding:8px 6px; font-size:12px; }
+  .ve-nav-cta .ve-cta-btn { padding:9px 12px; font-size:13px; }
 }
 @media (max-width:991px) {
   .ve-hero { flex-direction:column; min-height:auto; }

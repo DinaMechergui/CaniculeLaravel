@@ -16,6 +16,8 @@ use App\BackOffice\Controllers\DashboardController;
 use App\BackOffice\Controllers\CoupureController;
 use App\BackOffice\Controllers\DiagnosticController;
 use App\BackOffice\Controllers\CategorieConseilController;
+use App\BackOffice\Controllers\CampagneConseilController;
+use App\BackOffice\Controllers\CampagneAiController;
 use App\BackOffice\Controllers\ConseilController;
 use App\BackOffice\Controllers\PointFraicheurController;
 use App\BackOffice\Controllers\QuartierController;
@@ -23,6 +25,9 @@ use App\BackOffice\Controllers\SignalementController;
 use App\BackOffice\Controllers\TypePointController;
 use App\BackOffice\Controllers\TypeSignalementController;
 use App\BackOffice\Controllers\UserController;
+use App\BackOffice\Controllers\PlanUrgenceController;
+use App\BackOffice\Controllers\PlanAiController;
+use App\BackOffice\Controllers\EtapePlanController;
 use App\Http\Controllers\Back\AlerteMeteoController as BackAlerteMeteoController;
 use App\Http\Controllers\Back\MesurePreventionController;
 use App\Http\Controllers\Back\NiveauAlerteController;
@@ -106,10 +111,40 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 
     // Module « Conseils » : génération du contenu d'un conseil par IA
     // (appelée en JavaScript, déclarée avant la ressource « conseils »).
-    Route::post('conseils/generer', [ConseilController::class, 'generer'])->name('conseils.generer');
+    Route::post('conseils/generer', [ConseilController::class, 'generer'])->middleware('throttle:10,1')->name('conseils.generer');
 
     // Module « Conseils » : les conseils (enfant).
     Route::resource('conseils', ConseilController::class);
+
+         // Module « Conseils » : campagnes de sensibilisation.
+    Route::post('campagnes-conseil/ia/selection', [CampagneAiController::class, 'storeSelected'])->name('campagnes-conseil.ia.selection')->middleware('throttle:10,1');
+    Route::post('campagnes-conseil/ia', CampagneAiController::class)->name('campagnes-conseil.ia')->middleware('throttle:10,1');
+    // Routes spéciales déclarées AVANT la resource pour éviter les collisions.
+    Route::get('campagnes-conseil/statistiques', [CampagneConseilController::class, 'statistiques'])
+        ->name('campagnes-conseil.statistiques');
+    Route::get('campagnes-conseil/export-csv', [CampagneConseilController::class, 'exportCsv'])
+        ->name('campagnes-conseil.export-csv');
+    Route::post('campagnes-conseil/{campagneConseil}/activer', [CampagneConseilController::class, 'activer'])
+        ->name('campagnes-conseil.activer');
+    Route::post('campagnes-conseil/{campagneConseil}/terminer', [CampagneConseilController::class, 'terminer'])
+        ->name('campagnes-conseil.terminer');
+    Route::post('campagnes-conseil/{campagneConseil}/dupliquer', [CampagneConseilController::class, 'dupliquer'])
+        ->name('campagnes-conseil.dupliquer');
+    Route::resource('campagnes-conseil', CampagneConseilController::class)
+        ->parameters(['campagnes-conseil' => 'campagneConseil']);
+
+    Route::post('plans-urgence/{planUrgence}/activer', [PlanUrgenceController::class, 'activer'])->name('plans-urgence.activer');
+    Route::post('plans-urgence/{planUrgence}/desactiver', [PlanUrgenceController::class, 'desactiver'])->name('plans-urgence.desactiver');
+    Route::post('plans-urgence/{planUrgence}/dupliquer', [PlanUrgenceController::class, 'dupliquer'])->name('plans-urgence.dupliquer');
+    Route::post('plans-urgence/ia/creer', [PlanAiController::class, 'create'])->name('plans-urgence.ia.creer')->middleware('throttle:10,1');
+    Route::post('plans-urgence/ia', PlanAiController::class)->name('plans-urgence.ia')->middleware('throttle:10,1');
+    Route::get('plans-urgence/statistiques', [PlanUrgenceController::class, 'statistiques'])->name('plans-urgence.statistiques');
+    Route::post('plans-urgence/{planUrgence}/etapes/{etapePlan}/ordre', [PlanUrgenceController::class, 'reorganiser'])->name('plans-urgence.etapes.ordre');
+    Route::post('plans-urgence/{planUrgence}/etapes', [EtapePlanController::class, 'store'])->name('plans-urgence.etapes.store');
+    Route::get('etapes-plan/{etapePlan}/edit', [EtapePlanController::class, 'edit'])->name('etapes-plan.edit');
+    Route::put('etapes-plan/{etapePlan}', [EtapePlanController::class, 'update'])->name('etapes-plan.update');
+    Route::delete('etapes-plan/{etapePlan}', [EtapePlanController::class, 'destroy'])->name('etapes-plan.destroy');
+    Route::resource('plans-urgence', PlanUrgenceController::class)->parameters(['plans-urgence' => 'planUrgence']);
 
     // Module « Signalements » : les types (parent).
     Route::resource('types-signalement', TypeSignalementController::class)

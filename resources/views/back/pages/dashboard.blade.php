@@ -111,7 +111,51 @@
             </div>
         </div>
     </div>
+
+    {{-- Module « Campagnes » --}}
     <div class="row">
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="app-stat-card">
+                        <div class="app-stat-icon"><i class="bx bx-broadcast"></i></div>
+                        <div>
+                            <div class="app-stat-value">{{ $campagneStats['total'] }}</div>
+                            <div class="app-stat-label">Campagnes totales</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="app-stat-card">
+                        <div class="app-stat-icon"><i class="bx bx-check-circle"></i></div>
+                        <div>
+                            <div class="app-stat-value">{{ $campagneStats['actives'] }}</div>
+                            <div class="app-stat-label">Campagnes actives</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="app-stat-card">
+                        <div class="app-stat-icon"><i class="bx bx-calendar-exclamation"></i></div>
+                        <div>
+                            <div class="app-stat-value">{{ $campagneStats['finDans7j'] }}</div>
+                            <div class="app-stat-label">Expirent sous 7 jours</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xl-4 col-md-6 mb-4"><div class="card h-100"><div class="card-body"><div class="app-stat-card"><div class="app-stat-icon"><i class="bx bx-shield-alt-2"></i></div><div><div class="app-stat-value">{{ $planStats['actifs'] }} / {{ $planStats['total'] }}</div><div class="app-stat-label"><a href="{{ route('admin.plans-urgence.index') }}">Plans d'urgence actifs</a></div></div></div></div></div></div>
         {{-- Derniers inscrits --}}
         <div class="col-lg-8 mb-4">
             <div class="card">

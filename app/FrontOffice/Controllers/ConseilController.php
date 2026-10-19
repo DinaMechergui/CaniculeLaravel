@@ -5,6 +5,7 @@ namespace App\FrontOffice\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\CategorieConseil;
 use App\Models\Conseil;
+use App\Models\CampagneConseil;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -43,6 +44,7 @@ class ConseilController extends Controller
         return view('front.conseils.show', [
             'conseil' => $conseil->load('categorie'),
             'similaires' => $similaires,
+            'campagnes' => CampagneConseil::where('conseil_id', $conseil->id)->where('statut', 'active')->orderBy('date_fin')->get(),
         ]);
     }
 }

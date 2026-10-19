@@ -14,6 +14,7 @@
 use App\FrontOffice\Controllers\AssistantController;
 use App\FrontOffice\Controllers\HomeController;
 use App\FrontOffice\Controllers\CoupureController;
+use App\FrontOffice\Controllers\CampagneConseilController;
 use App\FrontOffice\Controllers\PointFraicheurController;
 use App\FrontOffice\Controllers\ProfileController;
 use App\FrontOffice\Controllers\SignalementController;
@@ -21,6 +22,8 @@ use App\Http\Controllers\Front\AlerteMeteoController as FrontAlerteMeteoControll
 use App\Http\Controllers\Front\ReservationController as FrontReservationController;
 use Illuminate\Support\Facades\Route;
 use App\FrontOffice\Controllers\ConseilController;
+use App\FrontOffice\Controllers\PlanUrgenceController;
+use App\FrontOffice\Controllers\PlanAiController;
 
 // Page d'accueil.
 Route::get('/', [HomeController::class, 'index'])->name('front.home');
@@ -84,6 +87,21 @@ Route::get('/reservations/{code}/qr', [FrontReservationController::class, 'qr'])
 Route::get('/conseils', [ConseilController::class, 'index'])->name('conseils.index');
 Route::get('/conseils/{conseil}', [ConseilController::class, 'show'])->name('conseils.show');
 
+// Module « Conseils » : campagnes de sensibilisation (pages publiques).
+Route::get('/campagnes', [CampagneConseilController::class, 'index'])->name('campagnes.index');
+Route::get('/campagnes/{campagneConseil}', [CampagneConseilController::class, 'show'])->name('campagnes.show');
+Route::get('/plans-urgence', [PlanUrgenceController::class, 'index'])->name('plans-urgence.index');
+Route::get('/plans-urgence/{planUrgence}/pdf', [PlanUrgenceController::class, 'pdf'])->name('plans-urgence.pdf');
+Route::get('/plans-urgence/{planUrgence}', [PlanUrgenceController::class, 'show'])->name('plans-urgence.show');
+Route::post('/plans-urgence/{planUrgence}/ia', [PlanAiController::class, 'transformer'])->middleware('throttle:10,1')->name('plans-urgence.ia.transformer');
+Route::middleware('auth')->group(function () {
+    Route::post('/plans-urgence/ia/personnalise', [PlanAiController::class, 'personnalise'])->middleware('throttle:10,1')->name('plans-urgence.ia.personnalise');
+    Route::get('/mes-plans', [PlanUrgenceController::class, 'mesPlans'])->name('mes-plans.index');
+    Route::get('/mon-foyer', [PlanUrgenceController::class, 'foyerEdit'])->name('foyer.edit');
+    Route::post('/mon-foyer', [PlanUrgenceController::class, 'foyerUpdate'])->name('foyer.update');
+    Route::post('/plans-urgence/cocher', [PlanUrgenceController::class, 'cocher'])->name('plans-urgence.cocher');
+    Route::post('/plans-urgence/{planUrgence}/reinitialiser', [PlanUrgenceController::class, 'reinitialiser'])->name('plans-urgence.reinitialiser');
+});
 // Module « Coupures » : pages publiques.
 Route::get('/coupures', [CoupureController::class, 'index'])->name('coupures.index');
 Route::get('/coupures/{coupure}', [CoupureController::class, 'show'])->name('coupures.show');

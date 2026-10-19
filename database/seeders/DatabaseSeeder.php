@@ -55,6 +55,11 @@ class DatabaseSeeder extends Seeder
             MesurePreventionSeeder::class,
             CategorieConseilSeeder::class,
             ConseilSeeder::class,
+            CampagneConseilSeeder::class,
+            PlanUrgenceSeeder::class,
+            EtapePlanSeeder::class,
+            ProfilFoyerSeeder::class,
+            SuiviPlanSeeder::class,
             TypeSignalementSeeder::class,
             SignalementSeeder::class,
             DiagnosticSeeder::class,  // Après SignalementSeeder (dépendance).
