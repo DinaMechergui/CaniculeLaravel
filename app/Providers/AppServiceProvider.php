@@ -39,7 +39,11 @@ class AppServiceProvider extends ServiceProvider
             return;
         }
 
-        $pdo = DB::connection()->getPdo();
+        try {
+            $pdo = DB::connection()->getPdo();
+        } catch (\Throwable $e) {
+            return;
+        }
 
         if (! method_exists($pdo, 'sqliteCreateFunction')) {
             return;

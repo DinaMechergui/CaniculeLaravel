@@ -33,8 +33,10 @@ pipeline {
                     if (isUnix()) {
                         sh """
                             docker run --rm --volumes-from \${HOSTNAME} -w "\${WORKSPACE}" ${DOCKER_IMAGE} bash -c "
-                                composer install --no-interaction --prefer-dist --optimize-autoloader &&
+                                git config --global --add safe.directory '*' || true &&
                                 cp -n .env.example .env || true &&
+                                touch database/database.sqlite || true &&
+                                composer install --no-interaction --prefer-dist --optimize-autoloader &&
                                 php artisan key:generate --env=testing &&
                                 npm install &&
                                 npm run build
@@ -42,7 +44,7 @@ pipeline {
                         """
                     } else {
                         bat """
-                            docker run --rm -v "%cd%:/var/www/html" -w /var/www/html %DOCKER_IMAGE% bash -c "composer install --no-interaction --prefer-dist --optimize-autoloader && cp -n .env.example .env || true && php artisan key:generate --env=testing && npm install && npm run build"
+                            docker run --rm -v "%cd%:/var/www/html" -w /var/www/html %DOCKER_IMAGE% bash -c "cp -n .env.example .env || true && touch database/database.sqlite || true && composer install --no-interaction --prefer-dist --optimize-autoloader && php artisan key:generate --env=testing && npm install && npm run build"
                         """
                     }
                 }
