@@ -1,0 +1,82 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: devspark-app:prod
+    container_name: devspark_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    environment:
+      APP_NAME: "DevSpark"
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_URL: "http://localhost:8000"
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: alerte_canicule
+      DB_USERNAME: root
+      DB_PASSWORD: root
+    networks:
+      - devspark_network
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    image: devspark-web:prod
+    container_name: devspark_web
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    depends_on:
+      - app
+    networks:
+      - devspark_network
+
+  db:
+    image: mysql:8.0
+    container_name: devspark_db
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: alerte_canicule
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - devspark_mysql_data:/var/lib/mysql
+    networks:
+      - devspark_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: devspark_pma
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+    depends_on:
+      - db
+    networks:
+      - devspark_network
+
+networks:
+  devspark_network:
+    name: devspark_network
+    driver: bridge
+
+volumes:
+  devspark_mysql_data:
+    name: devspark_mysql_data
+    driver: local

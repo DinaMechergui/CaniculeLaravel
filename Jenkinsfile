@@ -96,6 +96,17 @@ pipeline {
             echo '📊 Publication des résultats de tests...'
             junit testResults: 'reports/phpunit.xml', allowEmptyResults: true
         }
+        success {
+            echo '🎉 Pipeline CI validé avec succès !'
+            script {
+                try {
+                    echo '🚀 Déclenchement automatique du pipeline de déploiement continu (DevSpark-CD)...'
+                    build job: 'DevSpark-CD', wait: false
+                } catch (Exception e) {
+                    echo "Déclenchement du job 'DevSpark-CD' ignoré : ${e.getMessage()}"
+                }
+            }
+        }
         cleanup {
             echo '🧹 Nettoyage de l\'image Docker temporaire...'
             script {
