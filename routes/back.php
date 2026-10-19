@@ -14,6 +14,7 @@
 
 use App\BackOffice\Controllers\DashboardController;
 use App\BackOffice\Controllers\CoupureController;
+use App\BackOffice\Controllers\DiagnosticController;
 use App\BackOffice\Controllers\CategorieConseilController;
 use App\BackOffice\Controllers\ConseilController;
 use App\BackOffice\Controllers\PointFraicheurController;
@@ -107,4 +108,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 
     // Module « Signalements » : les signalements (enfant).
     Route::resource('signalements', SignalementController::class);
+
+    // Module « Signalements » : les diagnostics de pannes.
+    Route::resource('diagnostics', DiagnosticController::class);
 });

@@ -130,6 +130,12 @@
                 <div data-i18n="Signalements">Signalements</div>
             </a>
         </li>
+        <li class="menu-item {{ request()->routeIs('admin.diagnostics.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.diagnostics.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-wrench"></i>
+                <div data-i18n="Diagnostics">Diagnostics</div>
+            </a>
+        </li>
 
         {{-- Accès au site public --}}
         <li class="menu-header small text-uppercase">

@@ -56,6 +56,7 @@ class DatabaseSeeder extends Seeder
             ConseilSeeder::class,
             TypeSignalementSeeder::class,
             SignalementSeeder::class,
+            DiagnosticSeeder::class,  // Après SignalementSeeder (dépendance).
         ]);
     }
 }

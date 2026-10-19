@@ -109,6 +109,68 @@
                 </div>
             </div>
 
+            {{-- Section Diagnostic : affichée uniquement si le signalement en possède un --}}
+            @if ($signalement->diagnostic)
+                @php $diagnostic = $signalement->diagnostic; @endphp
+                <div class="pf-detail-card wow fadeInUp" style="margin-top:2rem;" data-wow-delay="300ms">
+                    <div class="pf-detail-icon">
+                        <i class="fa fa-wrench" aria-hidden="true"></i>
+                    </div>
+                    <h4>Diagnostic de la panne</h4>
+
+                    <ul class="pf-detail-list">
+                        <li>
+                            <i class="fa fa-map-marker" aria-hidden="true"></i>
+                            <div>
+                                <strong>Zone touchée</strong>
+                                <span>{{ \App\Models\Diagnostic::ZONES[$diagnostic->zone_touchee] ?? $diagnostic->zone_touchee }}</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fa fa-clock-o" aria-hidden="true"></i>
+                            <div>
+                                <strong>Heure de la panne</strong>
+                                <span>{{ $diagnostic->heure_panne }}</span>
+                            </div>
+                        </li>
+                        @if ($diagnostic->temperature !== null)
+                            <li>
+                                <i class="fa fa-thermometer-full" aria-hidden="true"></i>
+                                <div>
+                                    <strong>Température</strong>
+                                    <span>{{ $diagnostic->temperature }} °C</span>
+                                </div>
+                            </li>
+                        @endif
+                        <li>
+                            <i class="fa fa-list-ul" aria-hidden="true"></i>
+                            <div>
+                                <strong>Symptômes constatés</strong>
+                                @php
+                                    $constates = collect(\App\Models\Diagnostic::SYMPTOMES)
+                                        ->filter(fn ($label, $champ) => $diagnostic->$champ);
+                                @endphp
+                                <span>{{ $constates->isNotEmpty() ? $constates->implode(', ') : 'Aucun' }}</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fa fa-cogs" aria-hidden="true"></i>
+                            <div>
+                                <strong>Analyse IA</strong>
+                                <span>
+                                    @if ($diagnostic->estAnalyse())
+                                        Cause probable : {{ \App\Models\Diagnostic::CAUSES[$diagnostic->cause_predite] ?? $diagnostic->cause_predite }}
+                                        ({{ round($diagnostic->confiance * 100) }} %)
+                                    @else
+                                        En attente d'analyse
+                                    @endif
+                                </span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            @endif
+
             <div class="pf-detail-actions text-center">
                 @auth
                     <a href="{{ route('signalements.create') }}" class="ve-btn-primary">

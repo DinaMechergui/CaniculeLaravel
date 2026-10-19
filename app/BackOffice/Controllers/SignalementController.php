@@ -81,7 +81,7 @@ class SignalementController extends Controller
     public function show(Signalement $signalement): View
     {
         return view('back.signalements.show', [
-            'signalement' => $signalement->load(['typeSignalement', 'user']),
+            'signalement' => $signalement->load(['typeSignalement', 'user', 'diagnostic']),
         ]);
     }
 

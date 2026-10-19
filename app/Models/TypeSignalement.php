@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 /**
  * Type de signalement (catégorie).
@@ -29,5 +30,13 @@ class TypeSignalement extends Model
     public function signalements(): HasMany
     {
         return $this->hasMany(Signalement::class, 'type_signalement_id');
+    }
+
+    /**
+     * Diagnostics des signalements de ce type (via Signalement).
+     */
+    public function diagnostics(): HasManyThrough
+    {
+        return $this->hasManyThrough(Diagnostic::class, Signalement::class, 'type_signalement_id');
     }
 }
