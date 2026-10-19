@@ -113,6 +113,17 @@
                 <div data-i18n="Conseils">Conseils</div>
             </a>
         </li>
+        <li class="menu-item {{ request()->routeIs('admin.campagnes-conseil.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.campagnes-conseil.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-broadcast"></i>
+                <div data-i18n="Campagnes">Campagnes</div>
+            </a>
+        </li>
+
+        <li class="menu-header small text-uppercase"><span class="menu-header-text">Préparation</span></li>
+        <li class="menu-item {{ request()->routeIs('admin.plans-urgence.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.plans-urgence.index') }}" class="menu-link"><i class="menu-icon tf-icons bx bx-shield-alt-2"></i><div>Plans d'urgence</div></a>
+        </li>
 
         {{-- Module « Signalements » --}}
         <li class="menu-header small text-uppercase">

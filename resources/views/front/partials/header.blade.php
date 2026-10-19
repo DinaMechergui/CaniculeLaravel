@@ -35,6 +35,10 @@
                     <a href="{{ route('conseils.index') }}" class="{{ request()->routeIs('conseils.index', 'conseils.show') ? 'active' : '' }}">Conseils</a>
                 </li>
                 <li>
+                    <a href="{{ route('campagnes.index') }}" class="{{ request()->routeIs('campagnes.*') ? 'active' : '' }}">Campagnes</a>
+                </li>
+                <li><a href="{{ route('plans-urgence.index') }}" class="{{ request()->routeIs('plans-urgence.*') ? 'active' : '' }}">Plans d'urgence</a></li>
+                <li>
                     <a href="{{ route('signalements.index') }}"
                        class="{{ request()->routeIs('signalements.*') ? 'active' : '' }}">
                         Signalements
@@ -42,6 +46,7 @@
                 </li>
 
                 @auth
+                    <li><a href="{{ route('mes-plans.index') }}" class="{{ request()->routeIs('mes-plans.*') ? 'active' : '' }}">Mes plans</a></li>
                     <li>
                         <a href="{{ route('profile.edit') }}"
                            class="{{ request()->routeIs('profile.*') ? 'active' : '' }}">
@@ -109,6 +114,10 @@
                 <a href="{{ route('conseils.index') }}" class="{{ request()->routeIs('conseils.index', 'conseils.show') ? 'active' : '' }}">Conseils</a>
             </li>
             <li>
+                <a href="{{ route('campagnes.index') }}" class="{{ request()->routeIs('campagnes.*') ? 'active' : '' }}">Campagnes</a>
+            </li>
+            <li><a href="{{ route('plans-urgence.index') }}" class="{{ request()->routeIs('plans-urgence.*') ? 'active' : '' }}">Plans d'urgence</a></li>
+            <li>
                 <a href="{{ route('signalements.index') }}"
                    class="{{ request()->routeIs('signalements.*') ? 'active' : '' }}">
                     Signalements
@@ -119,6 +128,7 @@
                 <li><a href="{{ route('login') }}">Connexion</a></li>
                 <li><a href="{{ route('register') }}">Inscription</a></li>
             @else
+                <li><a href="{{ route('mes-plans.index') }}" class="{{ request()->routeIs('mes-plans.*') ? 'active' : '' }}">Mes plans</a></li>
                 <li>
                     <a href="{{ route('profile.edit') }}"
                        class="{{ request()->routeIs('profile.*') ? 'active' : '' }}">

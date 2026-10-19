@@ -7,6 +7,8 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -61,5 +63,15 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function etapesFaites(): BelongsToMany
+    {
+        return $this->belongsToMany(EtapePlan::class, 'etape_plan_user')->withPivot('fait_le');
+    }
+
+    public function profilFoyer(): HasOne
+    {
+        return $this->hasOne(ProfilFoyer::class, 'user_id');
     }
 }

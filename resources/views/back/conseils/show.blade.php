@@ -60,4 +60,31 @@
             </div>
         </div>
     </div>
+
+    {{-- Campagnes associées --}}
+    @if ($conseil->campagnes->isNotEmpty())
+        <div class="card mb-4">
+            <div class="card-header fw-semibold">
+                <i class="bx bx-broadcast me-1"></i> Campagnes associées ({{ $conseil->campagnes->count() }})
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr><th>Titre</th><th>Canal</th><th>Public</th><th>Période</th><th>Statut</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($conseil->campagnes as $campagne)
+                            <tr>
+                                <td><a href="{{ route('admin.campagnes-conseil.show', $campagne) }}">{{ $campagne->titre }}</a></td>
+                                <td>{{ $campagne->canal_label }}</td>
+                                <td>{{ $campagne->public_label }}</td>
+                                <td>{{ $campagne->date_debut->format('d/m/Y') }} → {{ $campagne->date_fin?->format('d/m/Y') ?? 'Sans fin' }}</td>
+                                <td><span class="badge bg-{{ $campagne->statut_badge }}">{{ $campagne->statut_label }}</span></td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
 @endsection

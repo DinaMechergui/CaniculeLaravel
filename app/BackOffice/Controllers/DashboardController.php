@@ -3,10 +3,13 @@
 namespace App\BackOffice\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\CampagneConseil;
 use App\Models\User;
 use Illuminate\View\View;
 use App\Models\CategorieConseil;
 use App\Models\Conseil;
+use App\Models\PlanUrgence;
+
 class DashboardController extends Controller
 {
     /**
@@ -35,10 +38,25 @@ class DashboardController extends Controller
                 ->orderByDesc('conseils_count')
                 ->first(),
         ];
+
+        // Module « Campagnes » : aperçu rapide.
+        $campagneStats = [
+            'total'    => CampagneConseil::count(),
+            'actives'  => CampagneConseil::where('statut', 'active')->count(),
+            'finDans7j' => CampagneConseil::where('statut', 'active')
+                ->whereNotNull('date_fin')
+                ->whereBetween('date_fin', [now()->startOfDay(), now()->addDays(7)->endOfDay()])
+                ->count(),
+        ];
+
+        $planStats = ['total' => PlanUrgence::count(), 'actifs' => PlanUrgence::where('actif', true)->count()];
+
         return view('back.pages.dashboard', [
             'stats' => $stats,
             'latestUsers' => $latestUsers,
-             'conseilStats' => $conseilStats,
+            'conseilStats' => $conseilStats,
+            'campagneStats' => $campagneStats,
+            'planStats' => $planStats,
         ]);
     }
 }

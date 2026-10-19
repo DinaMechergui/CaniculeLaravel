@@ -6,6 +6,7 @@
 @section('content')
     <section class="ve-section">
         <div class="container">
+            @if($campagnes->isNotEmpty())<div class="alert alert-info"><strong>Campagnes liées</strong><ul class="mb-0">@foreach($campagnes as $campagne)<li><a href="{{ route('campagnes.show',$campagne) }}">{{ $campagne->titre }}</a></li>@endforeach</ul></div>@endif
             {{-- Fil d'Ariane --}}
             <nav class="mb-4" aria-label="Fil d'Ariane">
                 <a href="{{ route('front.home') }}">Accueil</a>

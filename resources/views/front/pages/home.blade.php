@@ -4,6 +4,7 @@
 @section('description', 'Aide les habitants du quartier à anticiper les canicules, les coupures de courant et à trouver un point de fraîcheur.')
 
 @section('content')
+    @if($campagneEnVedette)<section class="ve-section" style="padding-bottom:0"><div class="container"><div class="alert alert-warning"><strong>Campagne en cours :</strong> <a href="{{ route('campagnes.show',$campagneEnVedette) }}">{{ $campagneEnVedette->titre }}</a> — se termine le {{ $campagneEnVedette->date_fin->format('d/m/Y') }}</div></div></section>@endif
     {{-- ===== HERO ===== --}}
     <section class="ve-hero">
         {{-- Panneau de gauche : texte --}}
