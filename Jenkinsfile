@@ -32,7 +32,7 @@ pipeline {
                 script {
                     if (isUnix()) {
                         sh """
-                            docker run --rm -v "\${WORKSPACE}:/var/www/html" -w /var/www/html ${DOCKER_IMAGE} bash -c "
+                            docker run --rm --volumes-from \${HOSTNAME} -w "\${WORKSPACE}" ${DOCKER_IMAGE} bash -c "
                                 composer install --no-interaction --prefer-dist --optimize-autoloader &&
                                 cp -n .env.example .env || true &&
                                 php artisan key:generate --env=testing &&
@@ -55,7 +55,7 @@ pipeline {
                 script {
                     if (isUnix()) {
                         sh """
-                            docker run --rm -v "\${WORKSPACE}:/var/www/html" -w /var/www/html \
+                            docker run --rm --volumes-from \${HOSTNAME} -w "\${WORKSPACE}" \
                                 -e APP_ENV=testing \
                                 -e DB_CONNECTION=sqlite \
                                 -e DB_DATABASE=:memory: \
