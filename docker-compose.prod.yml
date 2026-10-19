@@ -1,3 +1,5 @@
+name: devspark
+
 services:
   app:
     build:

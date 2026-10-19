@@ -65,11 +65,11 @@ pipeline {
                 echo '🚀 [CD] Déploiement et démarrage des services (App, Nginx, MySQL, PhpMyAdmin)...'
                 script {
                     if (isUnix()) {
-                        sh "docker compose -f docker-compose.prod.yml down --remove-orphans || true"
-                        sh "docker compose -f docker-compose.prod.yml up -d --remove-orphans"
+                        sh "docker compose -p devspark -f docker-compose.prod.yml down --remove-orphans || true"
+                        sh "docker compose -p devspark -f docker-compose.prod.yml up -d --remove-orphans"
                     } else {
-                        bat "docker compose -f docker-compose.prod.yml down --remove-orphans || exit 0"
-                        bat "docker compose -f docker-compose.prod.yml up -d --remove-orphans"
+                        bat "docker compose -p devspark -f docker-compose.prod.yml down --remove-orphans || exit 0"
+                        bat "docker compose -p devspark -f docker-compose.prod.yml up -d --remove-orphans"
                     }
                 }
             }
@@ -83,23 +83,23 @@ pipeline {
                         sh """
                             echo "Attente de l'état prêt pour MySQL..."
                             sleep 6
-                            docker compose -f docker-compose.prod.yml exec -T app cp -n .env.example .env || true
-                            docker compose -f docker-compose.prod.yml exec -T app php artisan key:generate --force || true
-                            docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
-                            docker compose -f docker-compose.prod.yml exec -T app php artisan optimize:clear
-                            docker compose -f docker-compose.prod.yml exec -T app php artisan config:cache
-                            docker compose -f docker-compose.prod.yml exec -T app php artisan route:cache
-                            docker compose -f docker-compose.prod.yml exec -T app php artisan view:cache
+                            docker compose -p devspark -f docker-compose.prod.yml exec -T app cp -n .env.example .env || true
+                            docker compose -p devspark -f docker-compose.prod.yml exec -T app php artisan key:generate --force || true
+                            docker compose -p devspark -f docker-compose.prod.yml exec -T app php artisan migrate --force
+                            docker compose -p devspark -f docker-compose.prod.yml exec -T app php artisan optimize:clear
+                            docker compose -p devspark -f docker-compose.prod.yml exec -T app php artisan config:cache
+                            docker compose -p devspark -f docker-compose.prod.yml exec -T app php artisan route:cache
+                            docker compose -p devspark -f docker-compose.prod.yml exec -T app php artisan view:cache
                         """
                     } else {
                         bat """
-                            docker compose -f docker-compose.prod.yml exec -T app cp -n .env.example .env || exit 0
-                            docker compose -f docker-compose.prod.yml exec -T app php artisan key:generate --force || exit 0
-                            docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
-                            docker compose -f docker-compose.prod.yml exec -T app php artisan optimize:clear
-                            docker compose -f docker-compose.prod.yml exec -T app php artisan config:cache
-                            docker compose -f docker-compose.prod.yml exec -T app php artisan route:cache
-                            docker compose -f docker-compose.prod.yml exec -T app php artisan view:cache
+                            docker compose -p devspark -f docker-compose.prod.yml exec -T app cp -n .env.example .env || exit 0
+                            docker compose -p devspark -f docker-compose.prod.yml exec -T app php artisan key:generate --force || exit 0
+                            docker compose -p devspark -f docker-compose.prod.yml exec -T app php artisan migrate --force
+                            docker compose -p devspark -f docker-compose.prod.yml exec -T app php artisan optimize:clear
+                            docker compose -p devspark -f docker-compose.prod.yml exec -T app php artisan config:cache
+                            docker compose -p devspark -f docker-compose.prod.yml exec -T app php artisan route:cache
+                            docker compose -p devspark -f docker-compose.prod.yml exec -T app php artisan view:cache
                         """
                     }
                 }
@@ -112,11 +112,11 @@ pipeline {
                 script {
                     if (isUnix()) {
                         sh """
-                            docker compose -f docker-compose.prod.yml ps
+                            docker compose -p devspark -f docker-compose.prod.yml ps
                             docker run --rm --network devspark_network curlimages/curl:latest curl -s -f -o /dev/null http://web/ || curl -s -f -o /dev/null http://localhost:8000/ || true
                         """
                     } else {
-                        bat "docker compose -f docker-compose.prod.yml ps"
+                        bat "docker compose -p devspark -f docker-compose.prod.yml ps"
                         bat "curl -s -f -o NUL http://localhost:8000/ || exit 0"
                     }
                 }
