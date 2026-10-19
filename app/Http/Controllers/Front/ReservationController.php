@@ -222,9 +222,10 @@ class ReservationController extends Controller
         $url = rtrim((string) config('app.url'), '/')
             . route('reservations.arrivee', $reservation->code, false);
 
-        $svg = class_exists(QrCode::class)
-            ? QrCode::format('svg')->size(240)->margin(1)->generate($url)
-            : '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240"><rect width="240" height="240" fill="#fff"/></svg>';
+        $svg = QrCode::format('svg')
+            ->size(240)
+            ->margin(1)
+            ->generate($url);
 
         return response($svg, 200, ['Content-Type' => 'image/svg+xml']);
     }
