@@ -107,6 +107,33 @@
                     </form>
                 </div>
             </div>
+
+            {{-- Diagnostic de la panne (1:1) --}}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="bx bx-wrench me-1"></i> Diagnostic</h5>
+                </div>
+                <div class="card-body">
+                    @if ($signalement->diagnostic)
+                        <p class="mb-2">
+                            <strong>Zone :</strong>
+                            {{ \App\Models\Diagnostic::ZONES[$signalement->diagnostic->zone_touchee] ?? $signalement->diagnostic->zone_touchee }}
+                        </p>
+                        <p class="mb-3">
+                            <strong>Danger (IA) :</strong>
+                            @include('back.diagnostics._badge-danger', ['niveau' => $signalement->diagnostic->niveau_danger])
+                        </p>
+                        <a href="{{ route('admin.diagnostics.show', $signalement->diagnostic) }}" class="btn btn-outline-primary w-100">
+                            <i class="bx bx-show me-1"></i> Voir le diagnostic
+                        </a>
+                    @else
+                        <p class="text-muted">Aucun diagnostic pour ce signalement.</p>
+                        <a href="{{ route('admin.diagnostics.create', ['signalement' => $signalement->id]) }}" class="btn btn-outline-primary w-100">
+                            <i class="bx bx-plus me-1"></i> Ajouter un diagnostic
+                        </a>
+                    @endif
+                </div>
+            </div>
         </div>
     </div>
 @endsection

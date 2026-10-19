@@ -75,11 +75,13 @@ class ConseilSeeder extends Seeder
                     $contenu .= "\n\n" . implode("\n\n", $extras);
                 }
 
-                Conseil::create([
-                    'categorie_conseil_id' => $categorie->id,
-                    'titre' => $titre,
-                    'contenu' => $contenu,
-                ]);
+                Conseil::firstOrCreate(
+                    [
+                        'categorie_conseil_id' => $categorie->id,
+                        'titre' => $titre,
+                    ],
+                    ['contenu' => $contenu]
+                );
             }
         }
     }

@@ -16,7 +16,7 @@ class CategorieConseilSeeder extends Seeder
         ];
 
         foreach ($categories as $categorie) {
-            CategorieConseil::create($categorie);
+            CategorieConseil::updateOrCreate(['nom' => $categorie['nom']], $categorie);
         }
     }
 }

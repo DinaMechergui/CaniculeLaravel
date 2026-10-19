@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * Signalement émis par un utilisateur.
@@ -72,5 +73,14 @@ class Signalement extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Diagnostic de la panne (1:1).
+     * La suppression en cascade est gérée au niveau de la migration (cascadeOnDelete).
+     */
+    public function diagnostic(): HasOne
+    {
+        return $this->hasOne(Diagnostic::class);
     }
 }

@@ -14,6 +14,7 @@
 
 use App\BackOffice\Controllers\DashboardController;
 use App\BackOffice\Controllers\CoupureController;
+use App\BackOffice\Controllers\DiagnosticController;
 use App\BackOffice\Controllers\CategorieConseilController;
 use App\BackOffice\Controllers\ConseilController;
 use App\BackOffice\Controllers\PointFraicheurController;
@@ -25,6 +26,7 @@ use App\BackOffice\Controllers\UserController;
 use App\Http\Controllers\Back\AlerteMeteoController as BackAlerteMeteoController;
 use App\Http\Controllers\Back\MesurePreventionController;
 use App\Http\Controllers\Back\NiveauAlerteController;
+use App\Http\Controllers\Back\ReservationController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
@@ -41,6 +43,40 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     // Module « Points de fraîcheur » : les points (enfant).
     Route::resource('points-fraicheur', PointFraicheurController::class)
         ->parameters(['points-fraicheur' => 'pointFraicheur']);
+
+    // Module « Réservations » : le back office ne crée pas de réservation
+    // (la création se fait en front office, sur la fiche du point). L'admin
+    // consulte, modifie (statut, notes), supprime et exporte.
+    //
+    // IMPORTANT : ces routes sans modèle doivent être déclarées AVANT la
+    // ressource pour ne pas être capturées par « reservations/{reservation} ».
+    Route::get('reservations/check-in', [ReservationController::class, 'checkInPage'])
+        ->name('reservations.check-in');
+    Route::post('reservations/check-in', [ReservationController::class, 'checkInStore'])
+        ->name('reservations.check-in.store');
+    Route::get('reservations/calendrier', [ReservationController::class, 'calendrier'])
+        ->name('reservations.calendrier');
+    Route::get('reservations/events', [ReservationController::class, 'events'])
+        ->name('reservations.events');
+    Route::get('reservations/export', [ReservationController::class, 'export'])
+        ->name('reservations.export');
+    // Analyse IA : prévisions et indicateurs (déclarée avant la ressource).
+    Route::get('reservations/analytique', [ReservationController::class, 'analytique'])
+        ->name('reservations.analytique');
+    Route::post('reservations/analytique/generer', [ReservationController::class, 'genererAnalytique'])
+        ->name('reservations.analytique.generer');
+    Route::resource('reservations', ReservationController::class)
+        ->except(['create', 'store']);
+    // Actions rapides en un clic depuis la liste.
+    Route::post('reservations/{reservation}/confirmer', [ReservationController::class, 'confirmer'])
+        ->name('reservations.confirmer');
+    Route::post('reservations/{reservation}/annuler', [ReservationController::class, 'annuler'])
+        ->name('reservations.annuler');
+    Route::post('reservations/{reservation}/check-in', [ReservationController::class, 'checkIn'])
+        ->name('reservations.marquer-check-in');
+    // Rédaction assistée par l'IA (AJAX depuis la fiche réservation).
+    Route::post('reservations/{reservation}/reponse-ia', [ReservationController::class, 'reponseIa'])
+        ->name('reservations.reponse-ia');
 
     // Module « Coupures » : les quartiers (parent) et les coupures (enfant).
     Route::resource('quartiers', QuartierController::class);
@@ -81,4 +117,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 
     // Module « Signalements » : les signalements (enfant).
     Route::resource('signalements', SignalementController::class);
+
+    // Module « Signalements » : les diagnostics de pannes.
+    Route::resource('diagnostics', DiagnosticController::class);
 });

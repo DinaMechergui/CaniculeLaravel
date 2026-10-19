@@ -34,7 +34,7 @@ class TypePointSeeder extends Seeder
         ];
 
         foreach ($types as $type) {
-            TypePoint::create($type);
+            TypePoint::updateOrCreate(['nom' => $type['nom']], $type);
         }
     }
 }

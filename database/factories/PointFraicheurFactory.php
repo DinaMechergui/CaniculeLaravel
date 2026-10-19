@@ -27,6 +27,7 @@ class PointFraicheurFactory extends Factory
             'longitude' => fake()->longitude(10.0, 10.3),
             'horaires' => '08:00 - 20:00',
             'accessible' => fake()->boolean(80),
+            'capacite' => fake()->numberBetween(20, 120),
         ];
     }
 }

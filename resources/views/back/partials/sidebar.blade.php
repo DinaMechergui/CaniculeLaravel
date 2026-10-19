@@ -52,6 +52,17 @@
             </a>
         </li>
 
+        {{-- Module « Réservations » --}}
+        <li class="menu-header small text-uppercase">
+            <span class="menu-header-text">Réservations</span>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.reservations.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.reservations.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-calendar-check"></i>
+                <div data-i18n="Réservations">Réservations</div>
+            </a>
+        </li>
+
         {{-- Module « Coupures » --}}
         <li class="menu-header small text-uppercase">
             <span class="menu-header-text">Coupures</span>
@@ -123,6 +134,12 @@
             <a href="{{ route('admin.signalements.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-error-alt"></i>
                 <div data-i18n="Signalements">Signalements</div>
+            </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.diagnostics.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.diagnostics.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-wrench"></i>
+                <div data-i18n="Diagnostics">Diagnostics</div>
             </a>
         </li>
 
