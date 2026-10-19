@@ -89,7 +89,7 @@ class AiService
      */
     protected function enCache(string $systeme, string $prompt, int $secondes, callable $production): array|string|null
     {
-        $cle = 'ai-service:' . sha1($systeme . "\n" . $prompt);
+        $cle = 'ai-service:' . hash('sha256', $systeme . "\n" . $prompt);
 
         $resultat = Cache::remember($cle, $secondes, $production);
 
