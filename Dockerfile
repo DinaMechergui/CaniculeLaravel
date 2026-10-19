@@ -32,7 +32,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Installation de Node.js et npm (pour Vite / front-end assets)
 RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
-    && npm install -g npm@latest \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Installation de Composer
