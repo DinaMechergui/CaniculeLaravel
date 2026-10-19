@@ -20,6 +20,7 @@
             <directory>app/Console/Commands</directory>
             <directory>app/Providers</directory>
             <directory>app/Http/Middleware</directory>
+            <directory>app/Notifications</directory>
         </exclude>
     </source>
     <php>

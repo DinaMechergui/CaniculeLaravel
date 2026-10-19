@@ -256,4 +256,96 @@ class CampagnesConseilTest extends TestCase
             ->assertSee('Pour les aînés')
             ->assertDontSee('Pour tous');
     }
+
+    public function test_admin_can_filter_index_and_view_pages(): void
+    {
+        $admin = $this->admin();
+        $conseil = $this->conseil();
+        $c = CampagneConseil::factory()->for($conseil)->create([
+            'titre' => 'Alerte Canicule Estivale',
+            'statut' => 'brouillon',
+            'canal' => 'affichage',
+            'public_cible' => 'tous',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.campagnes-conseil.index', [
+                'statut' => 'brouillon',
+                'canal' => 'affichage',
+                'public' => 'tous',
+                'q' => 'Canicule',
+            ]))
+            ->assertOk()
+            ->assertSee('Alerte Canicule Estivale');
+
+        $this->actingAs($admin)->get(route('admin.campagnes-conseil.create'))->assertOk();
+        $this->actingAs($admin)->get(route('admin.campagnes-conseil.show', $c))->assertOk();
+        $this->actingAs($admin)->get(route('admin.campagnes-conseil.edit', $c))->assertOk();
+    }
+
+    public function test_admin_can_activate_and_terminate_campagne(): void
+    {
+        $admin = $this->admin();
+        $conseil = $this->conseil();
+        $campagne = CampagneConseil::factory()->for($conseil)->create([
+            'statut' => 'brouillon',
+            'date_debut' => now()->toDateString(),
+            'date_fin' => now()->addDays(10)->toDateString(),
+        ]);
+
+        // Activer
+        $this->actingAs($admin)
+            ->post(route('admin.campagnes-conseil.activer', $campagne))
+            ->assertRedirect(route('admin.campagnes-conseil.show', $campagne));
+
+        $this->assertSame('active', $campagne->fresh()->statut);
+
+        // Terminer
+        $this->actingAs($admin)
+            ->post(route('admin.campagnes-conseil.terminer', $campagne))
+            ->assertRedirect(route('admin.campagnes-conseil.show', $campagne));
+
+        $this->assertSame('terminee', $campagne->fresh()->statut);
+    }
+
+    public function test_admin_can_duplicate_campagne(): void
+    {
+        $admin = $this->admin();
+        $conseil = $this->conseil();
+        $campagne = CampagneConseil::factory()->for($conseil)->create([
+            'titre' => 'Campagne Originale',
+            'date_debut' => '2026-06-01',
+            'date_fin' => '2026-06-30',
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->post(route('admin.campagnes-conseil.dupliquer', $campagne), [
+                'decalage_jours' => 30,
+            ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('campagnes_conseil', [
+            'titre' => 'Copie de Campagne Originale',
+        ]);
+    }
+
+    public function test_admin_can_view_statistiques_and_export_csv(): void
+    {
+        $admin = $this->admin();
+        $conseil = $this->conseil();
+        CampagneConseil::factory()->for($conseil)->create();
+
+        // Statistiques
+        $this->actingAs($admin)
+            ->get(route('admin.campagnes-conseil.statistiques'))
+            ->assertOk();
+
+        // Export CSV
+        $response = $this->actingAs($admin)
+            ->get(route('admin.campagnes-conseil.export-csv'));
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+    }
 }
+
