@@ -44,9 +44,11 @@ WORKDIR /var/www/html
 # Copie du code source
 COPY . /var/www/html
 
-# Configuration des permissions pour Laravel
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# Configuration des permissions pour Laravel et garantie de vendor
+RUN mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
+    && if [ ! -f "vendor/autoload.php" ]; then composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader || true; fi
 
 EXPOSE 9000
 

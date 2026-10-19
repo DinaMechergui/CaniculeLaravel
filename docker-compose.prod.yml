@@ -10,6 +10,7 @@ services:
     environment:
       APP_NAME: "DevSpark"
       APP_ENV: production
+      APP_KEY: "base64:XG8d2LkmVz+sU4qj+j0e6B9N/7kO2k5ZkFzQW0Xb+jQ="
       APP_DEBUG: "false"
       APP_URL: "http://localhost:8000"
       DB_CONNECTION: mysql

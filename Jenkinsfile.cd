@@ -15,31 +15,39 @@ pipeline {
             }
         }
 
-        stage('2. Build Assets & Production Dependencies') {
+        stage('2. Build Base Docker Image') {
+            steps {
+                echo '🐳 [CD] Construction de l\'image Docker de base...'
+                script {
+                    if (isUnix()) {
+                        sh "docker build -t ${APP_IMAGE} -f Dockerfile ."
+                    } else {
+                        bat "docker build -t %APP_IMAGE% -f Dockerfile ."
+                    }
+                }
+            }
+        }
+
+        stage('3. Build Assets & Production Dependencies') {
             steps {
                 echo '📦 [CD] Compilation des assets Vite et dépendances PHP de production...'
                 script {
                     if (isUnix()) {
                         sh """
-                            docker run --rm --volumes-from \${HOSTNAME} -w "\${WORKSPACE}" devspark-app:ci bash -c "
-                                git config --global --add safe.directory '*' || true &&
-                                composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader &&
-                                npm install &&
-                                npm run build
-                            "
+                            docker run --rm --volumes-from \${HOSTNAME} -w "\${WORKSPACE}" ${APP_IMAGE} sh -c "git config --global --add safe.directory '*' || true && composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader && npm install && npm run build"
                         """
                     } else {
                         bat """
-                            docker run --rm -v "%cd%:/var/www/html" -w /var/www/html devspark-app:ci bash -c "composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader && npm install && npm run build"
+                            docker run --rm -v "%cd%:/var/www/html" -w /var/www/html %APP_IMAGE% sh -c "composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader && npm install && npm run build"
                         """
                     }
                 }
             }
         }
 
-        stage('3. Build Production Docker Images') {
+        stage('4. Build Final Production Docker Images') {
             steps {
-                echo '🐳 [CD] Construction des images Docker de production (App & Nginx)...'
+                echo '🐳 [CD] Construction des images de production avec les assets compilés (App & Nginx)...'
                 script {
                     if (isUnix()) {
                         sh "docker build -t ${APP_IMAGE} -f Dockerfile ."
@@ -52,7 +60,7 @@ pipeline {
             }
         }
 
-        stage('4. Deploy Containers with Docker Compose') {
+        stage('5. Deploy Containers with Docker Compose') {
             steps {
                 echo '🚀 [CD] Déploiement et démarrage des services (App, Nginx, MySQL, PhpMyAdmin)...'
                 script {
@@ -67,7 +75,7 @@ pipeline {
             }
         }
 
-        stage('5. Run Database Migrations & Optimize Cache') {
+        stage('6. Run Database Migrations & Optimize Cache') {
             steps {
                 echo '⚡ [CD] Exécution des migrations MySQL et mise en cache Laravel...'
                 script {
@@ -78,6 +86,7 @@ pipeline {
                             docker compose -f docker-compose.prod.yml exec -T app cp -n .env.example .env || true
                             docker compose -f docker-compose.prod.yml exec -T app php artisan key:generate --force || true
                             docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
+                            docker compose -f docker-compose.prod.yml exec -T app php artisan optimize:clear
                             docker compose -f docker-compose.prod.yml exec -T app php artisan config:cache
                             docker compose -f docker-compose.prod.yml exec -T app php artisan route:cache
                             docker compose -f docker-compose.prod.yml exec -T app php artisan view:cache
@@ -87,6 +96,7 @@ pipeline {
                             docker compose -f docker-compose.prod.yml exec -T app cp -n .env.example .env || exit 0
                             docker compose -f docker-compose.prod.yml exec -T app php artisan key:generate --force || exit 0
                             docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
+                            docker compose -f docker-compose.prod.yml exec -T app php artisan optimize:clear
                             docker compose -f docker-compose.prod.yml exec -T app php artisan config:cache
                             docker compose -f docker-compose.prod.yml exec -T app php artisan route:cache
                             docker compose -f docker-compose.prod.yml exec -T app php artisan view:cache
@@ -96,15 +106,17 @@ pipeline {
             }
         }
 
-        stage('6. Health Check & Smoke Tests') {
+        stage('7. Health Check & Smoke Tests') {
             steps {
                 echo '🩺 [CD] Vérification du statut de l\'application déployée...'
                 script {
                     if (isUnix()) {
                         sh """
-                            docker run --rm --network devspark_network curlimages/curl:latest curl -s -f -o /dev/null -w "%{http_code}" http://web/ || curl -s -f -o /dev/null http://localhost:8000/ || true
+                            docker compose -f docker-compose.prod.yml ps
+                            docker run --rm --network devspark_network curlimages/curl:latest curl -s -f -o /dev/null http://web/ || curl -s -f -o /dev/null http://localhost:8000/ || true
                         """
                     } else {
+                        bat "docker compose -f docker-compose.prod.yml ps"
                         bat "curl -s -f -o NUL http://localhost:8000/ || exit 0"
                     }
                 }
