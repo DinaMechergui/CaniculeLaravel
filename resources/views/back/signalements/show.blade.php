@@ -1,9 +1,9 @@
 @extends('back.layouts.back')
 
-@section('title', 'Signalement #' . $signalement->id)
+@section('title', 'Détail du signalement')
 
 @section('content')
-    <x-page-header :title="'Signalement #' . $signalement->id" subtitle="Détail du signalement">
+    <x-page-header :title="$signalement->typeSignalement?->libelle ? 'Signalement : ' . $signalement->typeSignalement->libelle : 'Détail du signalement'" subtitle="Détail du signalement">
         @slot('actions')
             <a href="{{ route('admin.signalements.edit', $signalement) }}" class="btn btn-primary">
                 <i class="bx bx-edit me-1"></i> Modifier
@@ -23,8 +23,6 @@
                 </div>
                 <div class="card-body">
                     <dl class="row mb-0">
-                        <dt class="col-sm-4">ID</dt>
-                        <dd class="col-sm-8">{{ $signalement->id }}</dd>
 
                         <dt class="col-sm-4">Type</dt>
                         <dd class="col-sm-8">

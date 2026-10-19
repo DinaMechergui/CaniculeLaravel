@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AlerteMeteo extends Model
 {
@@ -42,6 +43,14 @@ class AlerteMeteo extends Model
     public function niveauAlerte(): BelongsTo
     {
         return $this->belongsTo(NiveauAlerte::class, 'niveau_alerte_id');
+    }
+
+    /**
+     * Mesures de prévention déclenchées par cette alerte.
+     */
+    public function mesures(): HasMany
+    {
+        return $this->hasMany(MesurePrevention::class, 'alerte_meteo_id');
     }
 
     /**

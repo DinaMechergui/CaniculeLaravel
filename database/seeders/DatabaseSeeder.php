@@ -43,6 +43,7 @@ class DatabaseSeeder extends Seeder
             CoupureSeeder::class,
             NiveauAlerteSeeder::class,
             AlerteMeteoSeeder::class,
+            MesurePreventionSeeder::class,
             CategorieConseilSeeder::class,
             ConseilSeeder::class,
             TypeSignalementSeeder::class,

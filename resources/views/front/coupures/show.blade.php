@@ -9,7 +9,7 @@
             <li><i class="fa fa-map-marker" aria-hidden="true"></i><div><strong>Quartier</strong><span>{{ $coupure->quartier?->nom }} — {{ $coupure->quartier?->ville }}</span></div></li>
             <li><i class="fa fa-bolt" aria-hidden="true"></i><div><strong>Type</strong><span>{{ ucfirst($coupure->type) }}</span></div></li>
             <li><i class="fa fa-clock-o" aria-hidden="true"></i><div><strong>Date de début</strong><span>{{ $coupure->date_debut->format('d/m/Y à H:i') }}</span></div></li>
-            <li><i class="fa fa-clock-o" aria-hidden="true"></i><div><strong>Date de fin</strong><span>{{ $coupure->date_fin?->format('d/m/Y à H:i') ?? 'Non précisée' }}</span></div></li>
+            <li><i class="fa fa-clock-o" aria-hidden="true"></i><div><strong>Fin prévue</strong><span>@if($coupure->date_fin){{ $coupure->date_fin->format('d/m/Y à H:i') }}@else<em class="text-warning">Estimation : Rétablissement sous 2h à 3h (équipes STEG mobilisées)</em>@endif</span></div></li>
         </ul></article><article class="pf-detail-card"><div class="pf-detail-icon"><i class="fa fa-info-circle" aria-hidden="true"></i></div><h4>Description</h4><p>{{ $coupure->description ?? 'Aucune information complémentaire.' }}</p></article></div>
         <div class="pf-detail-actions text-center"><a href="{{ route('coupures.index', ['quartier' => $coupure->quartier_id]) }}" class="ve-btn-primary"><i class="fa fa-arrow-left" aria-hidden="true"></i> Retour aux coupures</a></div>
     </div></section>

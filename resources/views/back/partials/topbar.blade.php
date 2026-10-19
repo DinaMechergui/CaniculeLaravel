@@ -19,6 +19,63 @@
                 </a>
             </li>
 
+            {{-- Notifications d'alertes administratives --}}
+            @php
+                $user = auth()->user();
+                $unreadNotifications = $user ? $user->unreadNotifications()->take(5)->get() : collect();
+                $unreadCount = $user ? $user->unreadNotifications()->count() : 0;
+            @endphp
+            <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-3">
+                <a class="nav-link dropdown-toggle hide-arrow position-relative" href="javascript:void(0);" data-bs-toggle="dropdown" aria-expanded="false" title="Alertes">
+                    <i class="bx bx-bell bx-sm"></i>
+                    @if ($unreadCount > 0)
+                        <span class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem; padding: 0.25em 0.5em;">
+                            {{ $unreadCount }}
+                        </span>
+                    @endif
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end py-0 shadow" style="min-width: 320px;">
+                    <li class="dropdown-menu-header border-bottom">
+                        <div class="dropdown-header d-flex align-items-center py-3">
+                            <h6 class="mb-0 me-auto">Alertes & Notifications</h6>
+                            <span class="badge bg-label-danger">{{ $unreadCount }} nouvelle(s)</span>
+                        </div>
+                    </li>
+                    <li class="dropdown-notifications-list scrollable-container">
+                        <ul class="list-group list-group-flush">
+                            @forelse ($unreadNotifications as $notification)
+                                <li class="list-group-item list-group-item-action dropdown-notifications-item p-3 border-bottom">
+                                    <div class="d-flex">
+                                        <div class="flex-shrink-0 me-3">
+                                            <span class="avatar-initial rounded-circle bg-label-danger p-2 d-inline-flex align-items-center justify-content-center">
+                                                <i class="bx bx-error text-danger"></i>
+                                            </span>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1" style="font-size: 0.85rem;">{{ $notification->data['titre'] ?? 'Alerte Réseau' }}</h6>
+                                            <p class="mb-1 small text-muted" style="line-height: 1.3;">{{ $notification->data['message'] ?? '' }}</p>
+                                            <small class="text-secondary" style="font-size: 0.75rem;">{{ $notification->created_at->diffForHumans() }}</small>
+                                        </div>
+                                    </div>
+                                </li>
+                            @empty
+                                <li class="list-group-item text-center py-4 text-muted">
+                                    <i class="bx bx-check-circle bx-sm d-block mb-1 text-success"></i>
+                                    Aucune alerte en attente.
+                                </li>
+                            @endforelse
+                        </ul>
+                    </li>
+                    @if ($unreadCount > 0)
+                        <li class="dropdown-menu-footer border-top p-2 text-center">
+                            <a href="{{ route('admin.coupures.index') }}" class="btn btn-sm btn-link text-primary w-100">
+                                Gérer les coupures du réseau
+                            </a>
+                        </li>
+                    @endif
+                </ul>
+            </li>
+
             {{-- Utilisateur connecté --}}
             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">

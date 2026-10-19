@@ -33,11 +33,17 @@ class AlerteMeteoController extends Controller
     }
 
     /**
-     * Détail d'une alerte météo publique.
+     * Détail d'une alerte météo publique avec mesures de prévention associées.
      */
     public function show(int $id): View
     {
-        $alerte = AlerteMeteo::with('niveauAlerte')->findOrFail($id);
+        $alerte = AlerteMeteo::with([
+            'niveauAlerte',
+            'mesures' => function ($query) {
+                $query->whereIn('statut', ['prevue', 'en_cours'])
+                    ->orderBy('date_debut', 'asc');
+            },
+        ])->findOrFail($id);
 
         return view('front.alertes-meteo.show', [
             'alerte' => $alerte,

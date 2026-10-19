@@ -45,6 +45,69 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Mesures de prévention rattachées à cette alerte --}}
+            <div class="card">
+                <div class="card-header bg-light d-flex align-items-center justify-content-between">
+                    <h5 class="card-title mb-0">
+                        <i class="bx bx-shield-quarter me-1 text-primary"></i>
+                        Mesures de prévention associées ({{ $alerteMeteo->mesures->count() }})
+                    </h5>
+                    <a href="{{ route('admin.mesures-prevention.create', ['alerte_meteo_id' => $alerteMeteo->id]) }}" class="btn btn-sm btn-primary">
+                        <i class="bx bx-plus me-1"></i> Ajouter une mesure
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Titre</th>
+                                    <th>Type</th>
+                                    <th>Statut</th>
+                                    <th>Responsable</th>
+                                    <th>Date début</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($alerteMeteo->mesures as $mesure)
+                                    <tr>
+                                        <td>
+                                            <a href="{{ route('admin.mesures-prevention.show', $mesure) }}" class="fw-semibold text-dark">
+                                                {{ $mesure->titre }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span class="badge {{ $mesure->type_badge_class }}">
+                                                {{ $mesure->type_label }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge {{ $mesure->statut_badge_class }}">
+                                                {{ $mesure->statut_label }}
+                                            </span>
+                                        </td>
+                                        <td>{{ $mesure->responsable }}</td>
+                                        <td>{{ $mesure->date_debut->format('d/m/Y H:i') }}</td>
+                                        <td class="text-end">
+                                            <a href="{{ route('admin.mesures-prevention.show', $mesure) }}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="bx bx-show"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-3">
+                                            Aucune mesure de prévention enregistrée pour cette alerte.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="col-md-4">

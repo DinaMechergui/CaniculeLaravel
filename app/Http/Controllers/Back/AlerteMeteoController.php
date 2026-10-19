@@ -77,7 +77,7 @@ class AlerteMeteoController extends Controller
      */
     public function show(AlerteMeteo $alerteMeteo): View
     {
-        $alerteMeteo->load('niveauAlerte');
+        $alerteMeteo->load(['niveauAlerte', 'mesures']);
 
         return view('back.alertes-meteo.show', [
             'alerteMeteo' => $alerteMeteo,
@@ -109,9 +109,16 @@ class AlerteMeteoController extends Controller
 
     /**
      * Suppression d'une alerte météo.
+     * Refus de suppression si des mesures de prévention y sont encore rattachées.
      */
     public function destroy(AlerteMeteo $alerteMeteo): RedirectResponse
     {
+        if ($alerteMeteo->mesures()->exists()) {
+            return redirect()
+                ->route('admin.alertes-meteo.index')
+                ->with('error', 'Impossible de supprimer cette alerte météo : des mesures de prévention y sont encore rattachées.');
+        }
+
         $alerteMeteo->delete();
 
         return redirect()

@@ -23,10 +23,6 @@
                 <div class="card-body mt-3">
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span class="fw-semibold">ID</span>
-                            <span>#{{ $niveauAlerte->id }}</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
                             <span class="fw-semibold">Libellé</span>
                             <span>{{ $niveauAlerte->libelle }}</span>
                         </li>

@@ -23,6 +23,7 @@ use App\BackOffice\Controllers\TypePointController;
 use App\BackOffice\Controllers\TypeSignalementController;
 use App\BackOffice\Controllers\UserController;
 use App\Http\Controllers\Back\AlerteMeteoController as BackAlerteMeteoController;
+use App\Http\Controllers\Back\MesurePreventionController;
 use App\Http\Controllers\Back\NiveauAlerteController;
 use Illuminate\Support\Facades\Route;
 
@@ -43,6 +44,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 
     // Module « Coupures » : les quartiers (parent) et les coupures (enfant).
     Route::resource('quartiers', QuartierController::class);
+    Route::post('coupures/predire-fin', [CoupureController::class, 'predireFin'])
+        ->name('coupures.predire-fin');
+    Route::post('notifications/{id}/mark-as-read', [CoupureController::class, 'markNotificationAsRead'])
+        ->name('notifications.mark-as-read');
     Route::resource('coupures', CoupureController::class);
 
     // Module « Alertes météo » : les niveaux d'alerte (parent).
@@ -54,6 +59,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         ->name('alertes-meteo.ai-generate');
     Route::resource('alertes-meteo', BackAlerteMeteoController::class)
         ->parameters(['alertes-meteo' => 'alerte_meteo']);
+
+    // Module « Mesures de prévention » (lié aux alertes météo).
+    Route::resource('mesures-prevention', MesurePreventionController::class)
+        ->parameters(['mesures-prevention' => 'mesure_prevention']);
 
     // Module « Conseils » : les catégories (parent).
     Route::resource('categories-conseil', CategorieConseilController::class)

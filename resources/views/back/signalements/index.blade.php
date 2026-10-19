@@ -52,7 +52,6 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-dark">
                         <tr>
-                            <th>#</th>
                             <th>Type</th>
                             <th>Auteur</th>
                             <th>Description</th>
@@ -65,7 +64,6 @@
                     <tbody>
                         @forelse ($signalements as $signalement)
                             <tr>
-                                <td>{{ $signalement->id }}</td>
                                 <td>
                                     <span class="badge bg-label-primary">
                                         {{ $signalement->typeSignalement?->libelle ?? 'N/A' }}

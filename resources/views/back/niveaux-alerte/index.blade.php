@@ -43,7 +43,6 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-dark">
                         <tr>
-                            <th>#</th>
                             <th>Niveau</th>
                             <th>Libellé</th>
                             <th>Couleur</th>
@@ -54,7 +53,6 @@
                     <tbody>
                         @forelse ($niveauxAlerte as $niveauAlerte)
                             <tr>
-                                <td>{{ $niveauAlerte->id }}</td>
                                 <td><span class="badge bg-label-dark fs-6">Niveau {{ $niveauAlerte->niveau }}</span></td>
                                 <td>
                                     <a href="{{ route('admin.niveaux-alerte.show', $niveauAlerte) }}" class="fw-semibold text-dark">
@@ -108,7 +106,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-4">
+                                <td colspan="5" class="text-center text-muted py-4">
                                     Aucun niveau d'alerte trouvé.
                                 </td>
                             </tr>

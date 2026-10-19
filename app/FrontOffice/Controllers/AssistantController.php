@@ -64,11 +64,18 @@ class AssistantController extends Controller
             ]
         );
 
+        $options = [];
+        $caBundle = config('services.openrouter.ca_bundle');
+        if ($caBundle && file_exists($caBundle)) {
+            $options['verify'] = $caBundle;
+        }
+
         try {
             $reponse = Http::withToken($cle)
+                ->withOptions($options)
                 ->timeout(30)
                 ->post(config('services.openrouter.url'), [
-                    'model' => config('services.openrouter.model'),
+                    'model' => config('services.openrouter.model', 'openai/gpt-4o-mini'),
                     'messages' => $messages,
                     'max_tokens' => 700,
                     'temperature' => 0.4,

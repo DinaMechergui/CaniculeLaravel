@@ -25,13 +25,73 @@ class AlerteAiService
                     return $this->formatResult($aiResponse, 'Gemini 1.5 Flash (IA Cloud)');
                 }
             } catch (\Throwable $e) {
-                Log::warning('Échec appel Gemini API, bascule sur le moteur expert local : ' . $e->getMessage());
+                Log::warning('Échec appel Gemini API, tentative avec OpenRouter : ' . $e->getMessage());
+            }
+        }
+
+        $openRouterKey = config('services.openrouter.key') ?? env('OPENROUTER_API_KEY');
+        if (!empty($openRouterKey)) {
+            try {
+                $aiResponse = $this->callOpenRouterApi($prompt, $openRouterKey);
+                if ($aiResponse) {
+                    return $this->formatResult($aiResponse, 'OpenRouter GPT-4o-mini (IA Cloud)');
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Échec appel OpenRouter API pour alerte météo, bascule sur le moteur expert local : ' . $e->getMessage());
             }
         }
 
         // Moteur expert intelligent de secours (fonctionne hors-ligne et sans clé)
         $localResult = $this->generateWithLocalExpert($prompt);
         return $this->formatResult($localResult, 'Moteur IA Expert Météo Tunisie (Local)');
+    }
+
+    /**
+     * Appel à l'API OpenRouter (GPT-4o-mini).
+     */
+    protected function callOpenRouterApi(string $prompt, string $apiKey): ?array
+    {
+        $systemInstruction = "Tu es un expert météorologue officiel de l'Institut National de la Météorologie de Tunisie (INM) et de la Protection Civile Tunisienne. "
+            . "À partir des mots-clés fournis par l'utilisateur, rédige un bulletin officiel d'alerte météo pour la Tunisie. "
+            . "Tu dois impérativement répondre UNIQUEMENT au format JSON strict avec les champs suivants : "
+            . "{"
+            . "  \"titre\": \"string court et percutant de max 120 caractères (ex: Vigilance Rouge : Canicule Extrême et Sirocco - Kairouan)\","
+            . "  \"couleur\": \"vert|jaune|orange|rouge (choisis selon la gravité de la température et du phénomène)\","
+            . "  \"message\": \"bulletin détaillé en français contenant le diagnostic météorologique, les prévisions, les consignes médicales claires (hydratation, personnes âgées, volets fermés) et les numéros d'urgence tunisiens 198 (Protection Civile) et 190 (SAMU).\","
+            . "  \"source\": \"Institut National de la Météorologie (INM)\""
+            . "}";
+
+        $caBundle = config('services.openrouter.ca_bundle');
+        $options = ($caBundle && file_exists($caBundle)) ? ['verify' => $caBundle] : [];
+
+        $model = config('services.openrouter.model', 'openai/gpt-4o-mini');
+        $url = config('services.openrouter.url', 'https://openrouter.ai/api/v1/chat/completions');
+
+        $response = Http::withToken($apiKey)
+            ->withOptions($options)
+            ->timeout(25)
+            ->post($url, [
+                'model' => $model,
+                'messages' => [
+                    ['role' => 'system', 'content' => $systemInstruction],
+                    ['role' => 'user', 'content' => "Mots-clés de l'alerte : " . $prompt]
+                ],
+                'temperature' => 0.3,
+            ]);
+
+        if ($response->successful()) {
+            $content = $response->json('choices.0.message.content');
+            if ($content) {
+                $clean = preg_replace('/^```(?:json)?\s*/i', '', trim($content));
+                $clean = preg_replace('/\s*```$/', '', $clean);
+                $decoded = json_decode($clean, true);
+                if (is_array($decoded)) {
+                    return $decoded;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**

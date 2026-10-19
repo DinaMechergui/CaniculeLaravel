@@ -46,7 +46,6 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>#</th>
                             <th>Auteur</th>
                             <th>Description</th>
                             <th>Statut</th>
@@ -57,7 +56,6 @@
                     <tbody>
                         @forelse ($signalements as $signalement)
                             <tr>
-                                <td>{{ $signalement->id }}</td>
                                 <td>{{ $signalement->user?->name ?? 'N/A' }}</td>
                                 <td>{{ \Illuminate\Support\Str::limit($signalement->description, 60) }}</td>
                                 <td>
@@ -84,7 +82,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-4">
+                                <td colspan="5" class="text-center text-muted py-4">
                                     Aucun signalement rattaché à ce type.
                                 </td>
                             </tr>

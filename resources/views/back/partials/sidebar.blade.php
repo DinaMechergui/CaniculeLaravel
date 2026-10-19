@@ -85,6 +85,12 @@
                 <div data-i18n="Alertes météo">Alertes météo</div>
             </a>
         </li>
+        <li class="menu-item {{ request()->routeIs('admin.mesures-prevention.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.mesures-prevention.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-shield-quarter"></i>
+                <div data-i18n="Mesures de prévention">Mesures de prévention</div>
+            </a>
+        </li>
 
         {{-- Module « Conseils » --}}
         <li class="menu-header small text-uppercase">

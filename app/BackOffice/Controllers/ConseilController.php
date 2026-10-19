@@ -89,35 +89,36 @@ class ConseilController extends Controller
             'categorie' => ['nullable', 'string', 'max:100'],
         ]);
 
-        $cle = config('services.openrouter.key');
-        $model = config('services.openrouter.model');
+        $cle = config('services.openrouter.conseil_key') ?: config('services.openrouter.key');
+        $model = config('services.openrouter.conseil_model') ?: config('services.openrouter.model') ?: 'openrouter/free';
 
         if (! $cle) {
             return response()->json([
-                'message' => 'La cle API OpenRouter est absente. Configurez OPENROUTER_API_KEY dans le fichier .env.',
+                'message' => 'La clé API OpenRouter est absente. Configurez OPENROUTER_CONSEIL_API_KEY ou OPENROUTER_API_KEY dans le fichier .env.',
             ], 503);
         }
 
         if (! $model) {
             return response()->json([
-                'message' => 'Le modele OpenRouter est absent. Configurez OPENROUTER_MODEL dans le fichier .env.',
+                'message' => 'Le modèle OpenRouter est absent. Configurez OPENROUTER_CONSEIL_MODEL dans le fichier .env.',
             ], 503);
         }
 
         try {
+            $options = [];
+            $caBundle = config('services.openrouter.ca_bundle');
+            if ($caBundle && file_exists($caBundle)) {
+                $options['verify'] = $caBundle;
+            }
+
             $reponse = Http::withToken($cle)
-                ->withOptions([
-                    'verify' => config('services.openrouter.ca_bundle'),
-                ])
+                ->withOptions($options)
                 ->acceptJson()
                 ->asJson()
                 ->timeout(60)
                 ->post('https://openrouter.ai/api/v1/chat/completions', [
                     'model' => $model,
                     'max_tokens' => 1200,
-                    'reasoning' => [
-                        'effort' => 'none',
-                    ],
                     'messages' => [
                         [
                             'role' => 'system',

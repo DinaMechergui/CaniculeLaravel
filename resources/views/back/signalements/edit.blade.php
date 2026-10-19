@@ -1,9 +1,9 @@
 @extends('back.layouts.back')
 
-@section('title', 'Modifier le signalement #' . $signalement->id)
+@section('title', 'Modifier le signalement')
 
 @section('content')
-    <x-page-header :title="'Modifier le signalement #' . $signalement->id" subtitle="Modification d'un signalement">
+    <x-page-header title="Modifier le signalement" subtitle="Modification d'un signalement">
         @slot('actions')
             <a href="{{ route('admin.signalements.show', $signalement) }}" class="btn btn-outline-secondary">
                 <i class="bx bx-show me-1"></i> Voir

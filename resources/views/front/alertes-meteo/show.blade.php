@@ -56,6 +56,57 @@
                         {!! nl2br(e($alerte->message)) !!}
                     </div>
 
+                    {{-- Mesures de prévention associées (prévues et en cours) --}}
+                    <div class="mt-5 pt-3 border-top">
+                        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                            <div>
+                                <h4 class="fw-bold mb-1">
+                                    <i class="fa fa-shield text-primary me-2"></i> Mesures de prévention déployées
+                                </h4>
+                                <small class="text-muted">Mesures d'urgence et dispositifs préventifs activés par les autorités.</small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill px-3 py-2">
+                                {{ $alerte->mesures->count() }} {{ Str::plural('mesure', $alerte->mesures->count()) }} active(s)
+                            </span>
+                        </div>
+
+                        @if ($alerte->mesures->isNotEmpty())
+                            <div class="row g-3 mt-1">
+                                @foreach ($alerte->mesures as $mesure)
+                                    <div class="col-md-6">
+                                        <div class="card h-100 border rounded-3 p-3 shadow-sm bg-light">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <span class="badge {{ $mesure->type_badge_class }} px-2 py-1">
+                                                    {{ $mesure->type_label }}
+                                                </span>
+                                                <span class="badge {{ $mesure->statut_badge_class }} px-2 py-1">
+                                                    {{ $mesure->statut_label }}
+                                                </span>
+                                            </div>
+                                            <h5 class="fw-bold text-dark mb-2">{{ $mesure->titre }}</h5>
+                                            <p class="text-secondary small mb-3 leading-relaxed">
+                                                {{ $mesure->description }}
+                                            </p>
+                                            <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center small text-muted flex-wrap gap-1">
+                                                <span>
+                                                    <i class="fa fa-calendar me-1"></i> Depuis le {{ $mesure->date_debut->format('d/m/Y à H:i') }}
+                                                </span>
+                                                <span>
+                                                    <i class="fa fa-user-circle me-1"></i> {{ $mesure->responsable }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="alert alert-light border text-center py-4 rounded-3 text-muted mt-2">
+                                <i class="fa fa-info-circle fa-2x mb-2 text-primary d-block"></i>
+                                Aucune mesure d'urgence supplémentaire n'est requise pour cette alerte météo.
+                            </div>
+                        @endif
+                    </div>
+
                     <hr class="my-4">
 
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 text-muted small">
