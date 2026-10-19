@@ -61,11 +61,11 @@ pipeline {
                                 -e APP_ENV=testing \
                                 -e DB_CONNECTION=sqlite \
                                 -e DB_DATABASE=:memory: \
-                                ${DOCKER_IMAGE} bash -c "mkdir -p reports && php -d pcov.enabled=1 vendor/bin/phpunit --log-junit reports/phpunit.xml --coverage-clover reports/coverage.xml"
+                                ${DOCKER_IMAGE} bash -c "mkdir -p reports && php -d pcov.enabled=1 vendor/bin/phpunit --log-junit reports/phpunit.xml --coverage-clover coverage.xml && cp coverage.xml reports/coverage.xml || true"
                         """
                     } else {
                         bat """
-                            docker run --rm -v "%cd%:/var/www/html" -w /var/www/html -e APP_ENV=testing -e DB_CONNECTION=sqlite -e DB_DATABASE=:memory: %DOCKER_IMAGE% bash -c "mkdir -p reports && php -d pcov.enabled=1 vendor/bin/phpunit --log-junit reports/phpunit.xml --coverage-clover reports/coverage.xml"
+                            docker run --rm -v "%cd%:/var/www/html" -w /var/www/html -e APP_ENV=testing -e DB_CONNECTION=sqlite -e DB_DATABASE=:memory: %DOCKER_IMAGE% bash -c "mkdir -p reports && php -d pcov.enabled=1 vendor/bin/phpunit --log-junit reports/phpunit.xml --coverage-clover coverage.xml && cp coverage.xml reports/coverage.xml || true"
                         """
                     }
                 }
