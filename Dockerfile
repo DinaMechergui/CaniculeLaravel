@@ -27,6 +27,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         bcmath \
         gd \
         zip \
+    && pecl install pcov && docker-php-ext-enable pcov \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Installation de Node.js et npm (pour Vite / front-end assets)

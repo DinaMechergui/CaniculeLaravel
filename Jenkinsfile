@@ -53,7 +53,7 @@ pipeline {
 
         stage('4. Run Tests in Docker') {
             steps {
-                echo '🧪 Exécution des tests PHPUnit dans le conteneur Docker...'
+                echo '🧪 Exécution des tests PHPUnit et calcul de la couverture dans le conteneur Docker...'
                 script {
                     if (isUnix()) {
                         sh """
@@ -61,11 +61,11 @@ pipeline {
                                 -e APP_ENV=testing \
                                 -e DB_CONNECTION=sqlite \
                                 -e DB_DATABASE=:memory: \
-                                ${DOCKER_IMAGE} php artisan test --log-junit reports/phpunit.xml
+                                ${DOCKER_IMAGE} bash -c "mkdir -p reports && php -d pcov.enabled=1 vendor/bin/phpunit --log-junit reports/phpunit.xml --coverage-clover reports/coverage.xml"
                         """
                     } else {
                         bat """
-                            docker run --rm -v "%cd%:/var/www/html" -w /var/www/html -e APP_ENV=testing -e DB_CONNECTION=sqlite -e DB_DATABASE=:memory: %DOCKER_IMAGE% php artisan test --log-junit reports/phpunit.xml
+                            docker run --rm -v "%cd%:/var/www/html" -w /var/www/html -e APP_ENV=testing -e DB_CONNECTION=sqlite -e DB_DATABASE=:memory: %DOCKER_IMAGE% bash -c "mkdir -p reports && php -d pcov.enabled=1 vendor/bin/phpunit --log-junit reports/phpunit.xml --coverage-clover reports/coverage.xml"
                         """
                     }
                 }
