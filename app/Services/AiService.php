@@ -272,7 +272,7 @@ class AiService
 
         // Numéros de téléphone (Tunisie : +216 / 0 suivis de 8 chiffres).
         $texte = (string) preg_replace(
-            '/(?:\+?216[\s.-]?)?(?:[2-579]\d|4\d|8\d)[\s.-]?\d{3}[\s.-]?\d{3}/',
+            '/(?:\+?216[\s.-]?)?[2-57-9]\d[\s.-]?\d{3}[\s.-]?\d{3}/',
             '[téléphone masqué]',
             $texte
         );
