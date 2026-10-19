@@ -71,6 +71,28 @@ pipeline {
                 }
             }
         }
+
+        stage('5. SonarQube Analysis') {
+            steps {
+                echo '📊 Analyse de la qualité de code avec SonarQube...'
+                withSonarQubeEnv('sonarqube') {
+                    script {
+                        if (isUnix()) {
+                            sh """
+                                docker run --rm --network deepskyn_network --volumes-from \${HOSTNAME} -w "\${WORKSPACE}" \
+                                    -e SONAR_HOST_URL="\${SONAR_HOST_URL}" \
+                                    -e SONAR_AUTH_TOKEN="\${SONAR_AUTH_TOKEN}" \
+                                    ${DOCKER_IMAGE} bash -c "npx -y sonarqube-scanner -Dsonar.host.url=\\\${SONAR_HOST_URL} -Dsonar.token=\\\${SONAR_AUTH_TOKEN} -Dsonar.login=\\\${SONAR_AUTH_TOKEN}"
+                            """
+                        } else {
+                            bat """
+                                docker run --rm --network deepskyn_network -v "%cd%:/var/www/html" -w /var/www/html -e SONAR_HOST_URL="%SONAR_HOST_URL%" -e SONAR_AUTH_TOKEN="%SONAR_AUTH_TOKEN%" %DOCKER_IMAGE% bash -c "npx -y sonarqube-scanner -Dsonar.host.url=%SONAR_HOST_URL% -Dsonar.token=%SONAR_AUTH_TOKEN% -Dsonar.login=%SONAR_AUTH_TOKEN%"
+                            """
+                        }
+                    }
+                }
+            }
+        }
     }
 
     post {
