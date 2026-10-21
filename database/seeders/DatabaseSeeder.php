@@ -41,6 +41,8 @@ class DatabaseSeeder extends Seeder
             PointFraicheurSeeder::class,
             QuartierSeeder::class,
             CoupureSeeder::class,
+            InterventionSeeder::class,
+            ImpactCoupureSeeder::class,
         ]);
     }
 }

@@ -68,6 +68,24 @@
                 <div data-i18n="Coupures">Coupures</div>
             </a>
         </li>
+        <li class="menu-item {{ request()->routeIs('admin.interventions.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.interventions.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-wrench"></i>
+                <div data-i18n="Interventions">Interventions</div>
+            </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.impacts-coupures.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.impacts-coupures.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-error-circle"></i>
+                <div data-i18n="Impacts des coupures">Impacts des coupures</div>
+            </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.smartgrid.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.smartgrid.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-map-pin"></i>
+                <div data-i18n="SmartGrid AI">SmartGrid AI</div>
+            </a>
+        </li>
 
         {{-- Accès au site public --}}
         <li class="menu-header small text-uppercase">

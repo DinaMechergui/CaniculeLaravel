@@ -1,6 +1,6 @@
 <?php
 
-namespace App\BackOffice\Controllers;
+namespace App\Http\Controllers\Back;
 
 use App\BackOffice\Requests\StoreCoupureRequest;
 use App\BackOffice\Requests\UpdateCoupureRequest;
@@ -74,7 +74,13 @@ class CoupureController extends Controller
 
     public function show(Coupure $coupure): View
     {
-        return view('back.coupures.show', ['coupure' => $coupure->load('quartier')]);
+        return view('back.coupures.show', [
+            'coupure' => $coupure->load([
+                'quartier',
+                'interventions' => fn ($query) => $query->latest('date_intervention'),
+                'impacts' => fn ($query) => $query->latest('date_signalement'),
+            ]),
+        ]);
     }
 
     public function edit(Coupure $coupure): View
@@ -94,6 +100,11 @@ class CoupureController extends Controller
 
     public function destroy(Coupure $coupure): RedirectResponse
     {
+        if ($coupure->interventions()->exists() || $coupure->impacts()->exists()) {
+            return redirect()->route('admin.coupures.index')
+                ->with('error', 'Impossible de supprimer cette coupure : des interventions ou des impacts y sont encore rattachés.');
+        }
+
         $coupure->delete();
 
         return redirect()->route('admin.coupures.index')->with('success', 'La coupure a été supprimée avec succès.');

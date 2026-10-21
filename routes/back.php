@@ -13,11 +13,14 @@
 */
 
 use App\BackOffice\Controllers\DashboardController;
-use App\BackOffice\Controllers\CoupureController;
 use App\BackOffice\Controllers\PointFraicheurController;
-use App\BackOffice\Controllers\QuartierController;
 use App\BackOffice\Controllers\TypePointController;
 use App\BackOffice\Controllers\UserController;
+use App\Http\Controllers\Back\CoupureController;
+use App\Http\Controllers\Back\ImpactCoupureController;
+use App\Http\Controllers\Back\InterventionController;
+use App\Http\Controllers\Back\QuartierController;
+use App\Http\Controllers\Back\SmartGridController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
@@ -38,4 +41,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     // Module « Coupures » : les quartiers (parent) et les coupures (enfant).
     Route::resource('quartiers', QuartierController::class);
     Route::resource('coupures', CoupureController::class);
+    Route::resource('interventions', InterventionController::class);
+    Route::resource('impacts-coupures', ImpactCoupureController::class)
+        ->parameters(['impacts-coupures' => 'impactCoupure']);
+    Route::get('/smartgrid', [SmartGridController::class, 'index'])->name('smartgrid.index');
+    Route::get('/smartgrid/data', [SmartGridController::class, 'data'])->name('smartgrid.data');
+    Route::post('/smartgrid/route', [SmartGridController::class, 'route'])
+        ->middleware('throttle:5,1')->name('smartgrid.route');
+    Route::post('/smartgrid/analyze-zone', [SmartGridController::class, 'analyzeZone'])
+        ->middleware('throttle:3,1')->name('smartgrid.analyze-zone');
+    Route::post('/smartgrid/analyze/{coupure}', [SmartGridController::class, 'analyze'])
+        ->middleware('throttle:3,1')->name('smartgrid.analyze');
 });

@@ -86,6 +86,67 @@ class CoupuresTest extends TestCase
             'ville' => 'Tunis',
             'code_postal' => '1004',
         ])->assertSessionHasErrors('nom');
+
+        $quartier = Quartier::firstOrFail();
+        $this->put('/admin/quartiers/'.$quartier->id, [
+            'nom' => $quartier->nom,
+            'ville' => $quartier->ville,
+            'code_postal' => $quartier->code_postal,
+        ])->assertRedirect('/admin/quartiers')->assertSessionHas('success');
+    }
+
+    public function test_quartier_and_coupure_reject_missing_fields_invalid_values_and_unknown_relations(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)->post('/admin/quartiers', [])->assertSessionHasErrors([
+            'nom',
+            'ville',
+            'code_postal',
+        ]);
+
+        $quartier = Quartier::factory()->create();
+        $this->put('/admin/quartiers/'.$quartier->id, [
+            'nom' => '',
+            'ville' => '',
+            'code_postal' => '',
+        ])->assertSessionHasErrors(['nom', 'ville', 'code_postal']);
+
+        $this->post('/admin/coupures', [
+            'quartier_id' => 999999,
+            'type' => 'inconnu',
+            'statut' => 'annulee',
+            'date_debut' => '',
+        ])->assertSessionHasErrors(['quartier_id', 'type', 'statut', 'date_debut']);
+
+        $attributes = [
+            'quartier_id' => $quartier->id,
+            'type' => 'panne',
+            'statut' => 'prevue',
+            'date_debut' => '2026-10-08T10:00',
+            'date_fin' => '2026-10-08T10:00',
+        ];
+        $this->post('/admin/coupures', $attributes)->assertSessionHasErrors('date_fin');
+        $this->assertDatabaseCount('coupures', 0);
+
+        $coupure = Coupure::factory()->for($quartier)->create();
+        $this->put('/admin/coupures/'.$coupure->id, [
+            ...$attributes,
+            'quartier_id' => 999999,
+            'type' => 'type-invalide',
+        ])->assertSessionHasErrors(['quartier_id', 'type']);
+        $this->assertDatabaseHas('coupures', ['id' => $coupure->id]);
+    }
+
+    public function test_quartier_list_is_paginated(): void
+    {
+        $admin = User::factory()->admin()->create();
+        Quartier::factory()->count(11)->create();
+
+        $response = $this->actingAs($admin)->get('/admin/quartiers')->assertOk();
+
+        $this->assertCount(10, $response->viewData('quartiers')->getCollection());
+        $response->assertSee('page=2', false);
     }
 
     public function test_admin_can_combine_quartier_search_and_outage_count_filters(): void

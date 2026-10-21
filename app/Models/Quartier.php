@@ -14,7 +14,15 @@ class Quartier extends Model
 
     protected $table = 'quartiers';
 
-    protected $fillable = ['nom', 'ville', 'code_postal'];
+    protected $fillable = ['nom', 'ville', 'code_postal', 'latitude', 'longitude'];
+
+    protected function casts(): array
+    {
+        return [
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
+        ];
+    }
 
     public function coupures(): HasMany
     {

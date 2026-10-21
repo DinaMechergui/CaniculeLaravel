@@ -8,5 +8,10 @@
     </div>
     <div class="row"><div class="col-md-6"><x-form-input name="date_debut" type="datetime-local" label="Date et heure de début" :value="$coupure->date_debut?->format('Y-m-d\\TH:i')" required /></div><div class="col-md-6"><x-form-input name="date_fin" type="datetime-local" label="Date et heure de fin" :value="$coupure->date_fin?->format('Y-m-d\\TH:i')" /></div></div>
     <div class="mb-3"><label class="form-label" for="description">Description</label><textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description" rows="4">{{ old('description', $coupure->description) }}</textarea>@error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
+    @include('back.partials.location-picker', [
+        'latitude' => $coupure->latitude,
+        'longitude' => $coupure->longitude,
+        'label' => 'Position précise de la coupure (facultative)',
+    ])
     <div class="d-flex gap-2 mt-3"><button class="btn btn-primary" type="submit"><i class="bx bx-save me-1"></i> Enregistrer</button><a href="{{ route('admin.coupures.index') }}" class="btn btn-outline-secondary">Annuler</a></div>
 </form>

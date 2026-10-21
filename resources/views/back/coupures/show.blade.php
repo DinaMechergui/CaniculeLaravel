@@ -12,4 +12,26 @@
         <div class="row mb-3"><div class="col-sm-3 text-muted">Fin</div><div class="col-sm-9">{{ $coupure->date_fin?->format('d/m/Y H:i') ?? 'Non renseignée' }}</div></div>
         <div class="row"><div class="col-sm-3 text-muted">Description</div><div class="col-sm-9">{{ $coupure->description ?? '—' }}</div></div>
     </div></div>
+    <div class="row g-4 mt-1">
+        <div class="col-lg-6">
+            <div class="card h-100"><div class="card-header"><h5 class="mb-0">Interventions ({{ $coupure->interventions->count() }})</h5></div><div class="card-body">
+                @forelse ($coupure->interventions as $intervention)
+                    <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                        <div><a href="{{ route('admin.interventions.show', $intervention) }}">{{ $intervention->equipe }}</a><div class="small text-muted">{{ $intervention->date_intervention->format('d/m/Y H:i') }}</div></div>
+                        <span class="badge {{ ['prevue' => 'bg-warning text-dark', 'en_cours' => 'bg-primary', 'terminee' => 'bg-success'][$intervention->statut] }}">{{ str_replace('_', ' ', ucfirst($intervention->statut)) }}</span>
+                    </div>
+                @empty<p class="text-muted mb-0">Aucune intervention rattachée.</p>@endforelse
+            </div></div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100"><div class="card-header"><h5 class="mb-0">Impacts ({{ $coupure->impacts->count() }})</h5></div><div class="card-body">
+                @forelse ($coupure->impacts as $impact)
+                    <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                        <div><a href="{{ route('admin.impacts-coupures.show', $impact) }}">{{ $impact->nom_structure }}</a><div class="small text-muted">{{ number_format($impact->personnes_affectees, 0, ',', ' ') }} personne(s) affectée(s)</div></div>
+                        <span class="badge {{ ['moyen' => 'bg-info', 'eleve' => 'bg-warning text-dark', 'critique' => 'bg-danger'][$impact->niveau_gravite] }}">{{ ucfirst($impact->niveau_gravite) }}</span>
+                    </div>
+                @empty<p class="text-muted mb-0">Aucun impact rattaché.</p>@endforelse
+            </div></div>
+        </div>
+    </div>
 @endsection

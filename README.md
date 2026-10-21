@@ -263,6 +263,33 @@ C:\laravel project\
 - Après connexion, un administrateur est dirigé vers `/admin`, un utilisateur vers `/`
   (voir `app/Support/AuthRedirect.php`).
 
+## SmartGrid AI — cartographie des coupures
+
+- Back office : `/admin/smartgrid` (route `admin.smartgrid.index`, accès administrateur).
+- Carte publique : `/coupures/carte`. Les coupures terminées, rapports, coordonnées
+  des équipes et informations d’adresse/descriptives privées ne sont pas exposés.
+- Les marqueurs sont affichés uniquement lorsque les coordonnées exactes ont été
+  saisies et validées. Aucun centre de quartier n’est utilisé pour placer une panne.
+- Les coordonnées facultatives des quartiers, coupures et impacts sont ajoutées
+  par migrations additives. Appliquer les migrations avec `php artisan migrate`;
+  aucune réinitialisation de base n’est nécessaire.
+- Leaflet, son module de regroupement et les tuiles OpenStreetMap sont chargés
+  depuis leurs services externes. Les cartes affichent l’attribution OpenStreetMap.
+- Pour les analyses Gemini, configurer `GEMINI_API_KEY` (modèle facultatif dans
+  `GEMINI_MODEL`). Pour les itinéraires routiers et leur matrice de durées,
+  configurer `OPENROUTESERVICE_API_KEY` (et facultativement
+  `OPENROUTESERVICE_BASE_URL`). Les clés restent côté serveur. Sans elles, le
+  tableau de bord et les scores déterministes restent disponibles, tandis que
+  l’IA et le routage affichent leur état non configuré.
+- Le score de priorité est déterministe : gravité maximale (0–40), personnes
+  affectées (0–25), présence d’un établissement sensible (école ou hôpital,
+  0–15), durée écoulée (0–15) et absence d’intervention active (0–5). Une coupure terminée reçoit le score 0. Le trajet
+  classe d’abord les priorités, puis minimise le temps routier entre priorités
+  égales via OpenRouteService. L’ordre et la recommandation sont indicatifs et
+  doivent être validés par un administrateur.
+- Vérification : `php artisan route:list` et `php artisan test`. Les tests utilisent
+  SQLite en mémoire et des réponses HTTP simulées pour les fournisseurs externes.
+
 ## Valeur ajoutée du module Points de fraîcheur
 
 **Explorateur à onglets : liste OU carte, sur la même page.**

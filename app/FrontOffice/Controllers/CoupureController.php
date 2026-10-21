@@ -5,11 +5,76 @@ namespace App\FrontOffice\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Coupure;
 use App\Models\Quartier;
+use App\Models\ImpactCoupure;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CoupureController extends Controller
 {
+    public function map(): View
+    {
+        return view('front.coupures.map', [
+            'quartiers' => Quartier::query()->orderBy('nom')->get(['id', 'nom', 'ville']),
+        ]);
+    }
+
+    public function mapData(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $filters = $request->validate([
+            'quartier_id' => ['nullable', 'integer', 'exists:quartiers,id'],
+            'statut' => ['nullable', 'in:prevue,en_cours'],
+        ]);
+
+        $coupures = Coupure::query()
+            ->with(['quartier', 'interventions', 'impacts'])
+            ->whereIn('statut', ['en_cours', 'prevue'])
+            ->when($filters['quartier_id'] ?? null, fn ($query, $id) => $query->where('quartier_id', $id))
+            ->when($filters['statut'] ?? null, fn ($query, $status) => $query->where('statut', $status))
+            ->latest('date_debut')
+            ->get();
+
+        $impacts = ImpactCoupure::query()
+            ->with('coupure.quartier')
+            ->whereIn('coupure_id', $coupures->modelKeys())
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->get()
+            ->map(fn (ImpactCoupure $impact) => [
+                'latitude' => (float) $impact->latitude,
+                'longitude' => (float) $impact->longitude,
+                'nom_structure' => $impact->nom_structure,
+                'categorie' => $impact->categorie,
+                'coupure' => $impact->coupure?->quartier?->nom,
+                'personnes_affectees' => $impact->personnes_affectees,
+                'niveau_gravite' => $impact->niveau_gravite,
+                'statut' => $impact->statut,
+                'mesures_urgence' => $impact->mesures_urgence,
+            ])->values();
+
+        return response()->json([
+            'coupures' => $coupures->map(fn (Coupure $coupure) => [
+                'id' => $coupure->id,
+                'latitude' => $coupure->latitude === null ? null : (float) $coupure->latitude,
+                'longitude' => $coupure->longitude === null ? null : (float) $coupure->longitude,
+                'quartier' => $coupure->quartier?->nom,
+                'ville' => $coupure->quartier?->ville,
+                'type' => $coupure->type,
+                'statut' => $coupure->statut,
+                'date_debut' => $coupure->date_debut->format('d/m/Y H:i'),
+                'date_fin' => $coupure->date_fin?->format('d/m/Y H:i'),
+                'personnes_affectees' => (int) $coupure->impacts->sum('personnes_affectees'),
+                'interventions_count' => $coupure->interventions->count(),
+                'interventions' => $coupure->interventions->sortByDesc('date_intervention')->values()->map(fn ($intervention) => [
+                    'equipe' => $intervention->equipe,
+                    'date' => $intervention->date_intervention->format('d/m/Y H:i'),
+                    'statut' => $intervention->statut,
+                ]),
+                'detail_url' => route('coupures.show', $coupure),
+            ])->values(),
+            'impacts' => $impacts,
+        ]);
+    }
+
     public function index(Request $request): View
     {
         $quartierId = $request->query('quartier');
@@ -33,6 +98,12 @@ class CoupureController extends Controller
     {
         abort_unless(in_array($coupure->statut, ['en_cours', 'prevue'], true), 404);
 
-        return view('front.coupures.show', ['coupure' => $coupure->load('quartier')]);
+        return view('front.coupures.show', [
+            'coupure' => $coupure->load([
+                'quartier',
+                'interventions' => fn ($query) => $query->latest('date_intervention'),
+                'impacts' => fn ($query) => $query->latest('date_signalement'),
+            ]),
+        ]);
     }
 }
