@@ -13,7 +13,7 @@ class SmartGridAIService
 
     public function isConfigured(): bool
     {
-        return filled(config('services.gemini.api_key'));
+        return filled(config('services.gemini.api_key')) || filled(config('services.openrouter.key'));
     }
 
     public function analyze(Coupure $coupure): array
@@ -94,12 +94,39 @@ class SmartGridAIService
 
     private function requestAnalysis(string $instruction, array $data): array
     {
+        $geminiKey = config('services.gemini.api_key');
+        if (filled($geminiKey)) {
+            try {
+                return $this->requestGemini($instruction, $data, (string) $geminiKey);
+            } catch (\Throwable $exception) {
+                Log::warning('Échec de l’analyse SmartGrid Gemini, tentative via OpenRouter si disponible.', ['exception' => $exception::class]);
+                if (! filled(config('services.openrouter.key'))) {
+                    throw new RuntimeException('Le service IA est momentanément indisponible. Réessayez plus tard.');
+                }
+            }
+        }
+
+        $openRouterKey = config('services.openrouter.key');
+        if (filled($openRouterKey)) {
+            try {
+                return $this->requestOpenRouter($instruction, $data, (string) $openRouterKey);
+            } catch (\Throwable $exception) {
+                Log::warning('Échec de l’analyse SmartGrid OpenRouter.', ['exception' => $exception::class]);
+                throw new RuntimeException('Le service IA est momentanément indisponible. Réessayez plus tard.');
+            }
+        }
+
+        throw new RuntimeException('L’assistant IA n’est pas configuré. Ajoutez GEMINI_API_KEY dans le fichier .env.');
+    }
+
+    private function requestGemini(string $instruction, array $data, string $apiKey): array
+    {
         $model = config('services.gemini.model', 'gemini-2.5-flash');
         $url = 'https://generativelanguage.googleapis.com/v1beta/models/'.rawurlencode($model).':generateContent';
 
         try {
             $response = Http::acceptJson()
-                ->withHeaders(['x-goog-api-key' => config('services.gemini.api_key')])
+                ->withHeaders(['x-goog-api-key' => $apiKey])
                 ->timeout(20)
                 ->post($url, [
                     'contents' => [[
@@ -118,6 +145,37 @@ class SmartGridAIService
 
         if (! is_array($analysis)) {
             Log::warning('Réponse Gemini invalide pour SmartGrid.');
+            throw new RuntimeException('Le service IA a retourné une réponse inexploitable.');
+        }
+
+        return $analysis;
+    }
+
+    private function requestOpenRouter(string $instruction, array $data, string $apiKey): array
+    {
+        $model = config('services.openrouter.model', 'openai/gpt-4o-mini');
+        $url = config('services.openrouter.url', 'https://openrouter.ai/api/v1/chat/completions');
+
+        $response = Http::withToken($apiKey)
+            ->acceptJson()
+            ->timeout(20)
+            ->post($url, [
+                'model' => $model,
+                'messages' => [
+                    ['role' => 'system', 'content' => $instruction],
+                    ['role' => 'user', 'content' => "Données JSON:\n".json_encode($data, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR)],
+                ],
+                'response_format' => ['type' => 'json_object'],
+                'max_tokens' => 1200,
+                'temperature' => 0.2,
+            ])
+            ->throw();
+
+        $content = $response->json('choices.0.message.content');
+        $analysis = is_string($content) ? json_decode($content, true) : null;
+
+        if (! is_array($analysis)) {
+            Log::warning('Réponse OpenRouter invalide pour SmartGrid.');
             throw new RuntimeException('Le service IA a retourné une réponse inexploitable.');
         }
 

@@ -220,6 +220,12 @@
         event.preventDefault();
         refresh();
     });
+    document.getElementById('sg-quartier')?.addEventListener('change', (event) => {
+        const zoneSelect = document.getElementById('sg-zone');
+        if (zoneSelect && event.target.value) {
+            zoneSelect.value = event.target.value;
+        }
+    });
     document.getElementById('sg-filters').addEventListener('reset', () => window.setTimeout(refresh, 0));
     document.getElementById('sg-cut-list').addEventListener('change', (event) => {
         if (!event.target.matches('.sg-route-select:checked')) return;
