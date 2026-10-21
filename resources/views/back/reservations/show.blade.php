@@ -188,16 +188,23 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0"><i class="bx bx-edit me-1"></i> Réponse assistée par l'IA</h5>
-                    <button type="button" class="btn btn-sm btn-outline-primary" id="btn-reponse-ia">
-                        <i class="bx bx-magic-wand me-1"></i> Générer une réponse
-                    </button>
+                    <div>
+                        <button type="button" class="btn btn-sm btn-outline-primary me-2" id="btn-reponse-ia">
+                            <i class="bx bx-magic-wand me-1"></i> Générer une réponse
+                        </button>
+                        <button type="button" class="btn btn-sm btn-primary" id="btn-envoyer-reponse">
+                            <i class="bx bx-send me-1"></i> Envoyer par e-mail
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
                     <p class="text-muted mb-2">
-                        Rédigez une réponse au visiteur. Le bouton propose une trame générée que vous pouvez modifier.
+                        Le bouton propose une trame générée que vous pouvez modifier,
+                        puis envoyer telle quelle à {{ $reservation->email }}.
                     </p>
                     <textarea id="reponse-ia" class="form-control" rows="7"
                               placeholder="Bonjour {{ $reservation->nom }}, ..."></textarea>
+                    <div class="mt-2" id="info-envoi-reponse"></div>
                 </div>
             </div>
         </div>
@@ -275,6 +282,45 @@
                         bouton.innerHTML = original;
                     });
             });
+
+            const boutonEnvoi = document.getElementById('btn-envoyer-reponse');
+            const infoEnvoi = document.getElementById('info-envoi-reponse');
+
+            if (boutonEnvoi && zone && infoEnvoi) {
+                boutonEnvoi.addEventListener('click', function () {
+                    const texte = zone.value.trim();
+
+                    if (! texte) {
+                        infoEnvoi.innerHTML = '<span class="text-danger small">Rédigez d\'abord une réponse.</span>';
+                        return;
+                    }
+
+                    boutonEnvoi.disabled = true;
+                    infoEnvoi.innerHTML = '<span class="text-muted small">Envoi en cours…</span>';
+
+                    fetch('{{ route('admin.reservations.envoyer-reponse', $reservation) }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ reponse: texte }),
+                    })
+                        .then((reponse) => reponse.json().then((donnees) => ({ ok: reponse.ok, donnees })))
+                        .then(({ ok, donnees }) => {
+                            infoEnvoi.innerHTML = ok
+                                ? '<span class="text-success small">' + (donnees.message || 'Réponse envoyée.') + '</span>'
+                                : '<span class="text-danger small">' + (donnees.message || 'Envoi impossible.') + '</span>';
+                        })
+                        .catch(() => {
+                            infoEnvoi.innerHTML = '<span class="text-danger small">Erreur réseau : envoi impossible.</span>';
+                        })
+                        .finally(() => {
+                            boutonEnvoi.disabled = false;
+                        });
+                });
+            }
         });
     </script>
 @endpush
