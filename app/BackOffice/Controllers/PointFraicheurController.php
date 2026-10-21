@@ -104,6 +104,13 @@ class PointFraicheurController extends Controller
      */
     public function destroy(PointFraicheur $pointFraicheur): RedirectResponse
     {
+        // Un point rattaché à des réservations (même supprimées) ne peut pas être supprimé.
+        if ($pointFraicheur->reservations()->withTrashed()->exists()) {
+            return redirect()
+                ->route('admin.points-fraicheur.index')
+                ->with('error', 'Impossible de supprimer ce point : des réservations y sont rattachées.');
+        }
+
         $pointFraicheur->delete();
 
         return redirect()

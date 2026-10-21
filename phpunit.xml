@@ -16,6 +16,12 @@
         <include>
             <directory>app</directory>
         </include>
+        <exclude>
+            <directory>app/Console/Commands</directory>
+            <directory>app/Providers</directory>
+            <directory>app/Http/Middleware</directory>
+            <directory>app/Notifications</directory>
+        </exclude>
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
@@ -28,6 +34,11 @@
         <env name="DB_DATABASE" value=":memory:"/>
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>
+        <!-- Les tests ne doivent JAMAIS appeler un vrai fournisseur d'IA :
+             clés vidées par défaut (les tests d'IA les définissent eux-mêmes
+             via config() + Http::fake()). -->
+        <env name="OPENROUTER_API_KEY" value=""/>
+        <env name="GEMINI_API_KEY" value=""/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>

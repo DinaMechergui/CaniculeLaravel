@@ -97,6 +97,9 @@
             </div>
 
             <div class="pf-detail-actions text-center">
+                <a href="{{ route('reservations.create', $point) }}" class="ve-btn-primary">
+                    <i class="fa fa-calendar-check-o" aria-hidden="true"></i> Réserver un créneau
+                </a>
                 <a href="{{ route('points-fraicheur.index', ['point' => $point->id, 'vue' => 'carte']) }}" class="ve-btn-primary">
                     <i class="fa fa-map-marker" aria-hidden="true"></i> Voir sur la carte
                 </a>

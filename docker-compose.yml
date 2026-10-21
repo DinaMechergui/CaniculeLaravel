@@ -1,0 +1,62 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: devspark_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    networks:
+      - devspark_network
+
+  web:
+    image: nginx:alpine
+    container_name: devspark_web
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - devspark_network
+
+  db:
+    image: mysql:8.0
+    container_name: devspark_db
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: alerte_canicule
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - devspark_mysql_data:/var/lib/mysql
+    networks:
+      - devspark_network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: devspark_pma
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+    depends_on:
+      - db
+    networks:
+      - devspark_network
+
+networks:
+  devspark_network:
+    driver: bridge
+
+volumes:
+  devspark_mysql_data:
+    driver: local

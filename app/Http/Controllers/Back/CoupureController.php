@@ -7,13 +7,16 @@ use App\BackOffice\Requests\UpdateCoupureRequest;
 use App\Http\Controllers\Controller;
 use App\Models\Coupure;
 use App\Models\Quartier;
+use App\Services\CoupureAlertService;
+use App\Services\CoupurePredictionService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CoupureController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, CoupureAlertService $alertService): View
     {
         $filters = $request->validate([
             'search' => ['nullable', 'string', 'max:100'],
@@ -54,7 +57,10 @@ class CoupureController extends Controller
         $quartiers = Quartier::query()->orderBy('nom')->get(['id', 'nom', 'ville']);
         $hasFilters = collect($filters)->contains(fn ($value) => $value !== null && $value !== '');
 
-        return view('back.coupures.index', compact('coupures', 'quartiers', 'filters', 'hasFilters'));
+        // Détection des quartiers à haute fréquence de coupures pour alerter l'administrateur
+        $quartiersCritiques = $alertService->getQuartiersCritiques(3);
+
+        return view('back.coupures.index', compact('coupures', 'quartiers', 'filters', 'hasFilters', 'quartiersCritiques'));
     }
 
     public function create(): View
@@ -65,21 +71,42 @@ class CoupureController extends Controller
         ]);
     }
 
-    public function store(StoreCoupureRequest $request): RedirectResponse
+    public function store(StoreCoupureRequest $request, CoupureAlertService $alertService): RedirectResponse
     {
-        Coupure::create($request->validated());
+        $coupure = Coupure::create($request->validated());
 
-        return redirect()->route('admin.coupures.index')->with('success', 'La coupure a été créée avec succès.');
+        // Alerte automatique si le quartier dépasse le seuil critique de coupures
+        $alerte = $alertService->verifierEtAlerter($coupure->quartier_id);
+
+        $response = redirect()->route('admin.coupures.index')
+            ->with('success', 'La coupure a été créée avec succès.');
+
+        if ($alerte) {
+            $response->with('warning', $alerte['message']);
+        }
+
+        return $response;
     }
 
-    public function show(Coupure $coupure): View
+    public function show(Coupure $coupure, CoupurePredictionService $predictionService): View
     {
+        $prediction = null;
+        if (in_array($coupure->statut, ['en_cours', 'prevue'], true)) {
+            $prediction = $predictionService->predireFin(
+                $coupure->quartier_id,
+                $coupure->type,
+                $coupure->date_debut,
+                $coupure->description
+            );
+        }
+
         return view('back.coupures.show', [
             'coupure' => $coupure->load([
                 'quartier',
                 'interventions' => fn ($query) => $query->latest('date_intervention'),
                 'impacts' => fn ($query) => $query->latest('date_signalement'),
             ]),
+            'prediction' => $prediction,
         ]);
     }
 
@@ -91,11 +118,21 @@ class CoupureController extends Controller
         ]);
     }
 
-    public function update(UpdateCoupureRequest $request, Coupure $coupure): RedirectResponse
+    public function update(UpdateCoupureRequest $request, Coupure $coupure, CoupureAlertService $alertService): RedirectResponse
     {
         $coupure->update($request->validated());
 
-        return redirect()->route('admin.coupures.index')->with('success', 'La coupure a été modifiée avec succès.');
+        // Alerte automatique si le quartier dépasse le seuil critique
+        $alerte = $alertService->verifierEtAlerter($coupure->quartier_id);
+
+        $response = redirect()->route('admin.coupures.index')
+            ->with('success', 'La coupure a été modifiée avec succès.');
+
+        if ($alerte) {
+            $response->with('warning', $alerte['message']);
+        }
+
+        return $response;
     }
 
     public function destroy(Coupure $coupure): RedirectResponse
@@ -108,5 +145,43 @@ class CoupureController extends Controller
         $coupure->delete();
 
         return redirect()->route('admin.coupures.index')->with('success', 'La coupure a été supprimée avec succès.');
+    }
+
+    /**
+     * Endpoint API AJAX pour prédire l'heure de fin par IA.
+     */
+    public function predireFin(Request $request, CoupurePredictionService $predictionService): JsonResponse
+    {
+        $data = $request->validate([
+            'quartier_id' => ['nullable', 'integer', 'exists:quartiers,id'],
+            'type'        => ['required', 'in:delestage,panne,surcharge'],
+            'date_debut'  => ['nullable', 'string'],
+            'description' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $resultat = $predictionService->predireFin(
+            $data['quartier_id'] ?? null,
+            $data['type'],
+            $data['date_debut'] ?? null,
+            $data['description'] ?? null
+        );
+
+        return response()->json($resultat);
+    }
+
+    /**
+     * Marquer une notification d'alerte comme lue.
+     */
+    public function markNotificationAsRead(string $id): JsonResponse
+    {
+        $user = auth()->user();
+        if ($user) {
+            $notification = $user->notifications()->where('id', $id)->first();
+            if ($notification) {
+                $notification->markAsRead();
+            }
+        }
+
+        return response()->json(['success' => true]);
     }
 }

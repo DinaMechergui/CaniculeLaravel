@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Point de fraîcheur : lieu où les habitants peuvent se rafraîchir.
@@ -28,6 +29,7 @@ class PointFraicheur extends Model
         'longitude',
         'horaires',
         'accessible',
+        'capacite',
     ];
 
     /**
@@ -39,6 +41,7 @@ class PointFraicheur extends Model
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
             'accessible' => 'boolean',
+            'capacite' => 'integer',
         ];
     }
 
@@ -48,6 +51,14 @@ class PointFraicheur extends Model
     public function type(): BelongsTo
     {
         return $this->belongsTo(TypePoint::class, 'type_point_id');
+    }
+
+    /**
+     * Réservations de créneaux liées à ce point (1 point → N réservations).
+     */
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(Reservation::class, 'point_fraicheur_id');
     }
 
     /**

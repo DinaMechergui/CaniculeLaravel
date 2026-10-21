@@ -4,6 +4,7 @@
 @section('description', 'Aide les habitants du quartier à anticiper les canicules, les coupures de courant et à trouver un point de fraîcheur.')
 
 @section('content')
+    @if($campagneEnVedette)<section class="ve-section" style="padding-bottom:0"><div class="container"><div class="alert alert-warning"><strong>Campagne en cours :</strong> <a href="{{ route('campagnes.show',$campagneEnVedette) }}">{{ $campagneEnVedette->titre }}</a> — se termine le {{ $campagneEnVedette->date_fin->format('d/m/Y') }}</div></div></section>@endif
     {{-- ===== HERO ===== --}}
     <section class="ve-hero">
         {{-- Panneau de gauche : texte --}}
@@ -20,7 +21,7 @@
                     <a href="{{ route('register') }}" class="ve-btn-primary">Créer un compte</a>
                     <a href="{{ route('login') }}" class="ve-btn-ghost">Se connecter</a>
                 @else
-                    <a href="{{ route('front.home') }}" class="ve-btn-primary">Consulter les alertes</a>
+                    <a href="{{ route('alertes.index') }}" class="ve-btn-primary">Consulter les alertes</a>
                     @if (auth()->user()->isAdmin())
                         <a href="{{ route('admin.dashboard') }}" class="ve-btn-ghost">Back office</a>
                     @endif
@@ -203,4 +204,27 @@
             </div>
         </div>
     </section>
+
+    {{-- Conseil du jour --}}
+    @if ($conseilDuJour)
+        <section class="ve-section" style="padding-top:0;">
+            <div class="container">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4 p-md-5 text-center">
+                        <span class="badge badge-info mb-3">
+                            <i class="fa fa-lightbulb-o" aria-hidden="true"></i> Conseil du jour
+                        </span>
+                        <h3 class="mb-3">{{ $conseilDuJour->titre }}</h3>
+                        <p class="text-muted mb-4">
+                            {{ \Illuminate\Support\Str::limit(strip_tags($conseilDuJour->contenu), 180) }}
+                        </p>
+                        <a href="{{ route('conseils.show', $conseilDuJour) }}" class="btn btn-primary">
+                            Lire le conseil
+                        </a>
+                        <a href="{{ route('conseils.index') }}" class="btn btn-link">Tous les conseils</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    @endif
 @endsection

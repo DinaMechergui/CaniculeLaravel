@@ -181,6 +181,7 @@ class InterventionsImpactsTest extends TestCase
         ImpactCoupure::factory()->for($otherCoupure)->create([
             'nom_structure' => 'Commerce extérieur',
             'personnes_affectees' => 8,
+            'niveau_gravite' => 'moyen',
             'statut' => 'resolu',
         ]);
 

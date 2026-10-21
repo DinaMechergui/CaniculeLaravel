@@ -7,6 +7,31 @@
         @endslot
     </x-page-header>
 
+    {{-- Bannière d'alerte des zones critiques --}}
+    @if (!empty($quartiersCritiques) && $quartiersCritiques->isNotEmpty())
+        <div class="alert alert-danger border-danger mb-4 shadow-sm" role="alert">
+            <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+                <div class="d-flex align-items-center">
+                    <i class="bx bx-error-circle bx-sm me-2 text-danger"></i>
+                    <h5 class="alert-heading mb-0 text-danger fw-bold">
+                        🚨 Alerte Admin : Forte concentration de coupures détectée (≥ 3 incidents)
+                    </h5>
+                </div>
+                <span class="badge bg-danger">{{ $quartiersCritiques->count() }} quartier(s) en alerte</span>
+            </div>
+            <p class="mb-2 text-dark">
+                Le système a détecté une récurrence anormale de coupures dans les secteurs suivants. Cliquez sur un quartier pour filtrer ses incidents :
+            </p>
+            <div class="d-flex flex-wrap gap-2">
+                @foreach ($quartiersCritiques as $critique)
+                    <a href="{{ route('admin.coupures.index', ['quartier_id' => $critique->id]) }}" class="badge bg-danger p-2 text-white text-decoration-none">
+                        <i class="bx bx-map-pin me-1"></i> {{ $critique->nom }} ({{ $critique->ville }}) — <strong>{{ $critique->coupures_count }} coupures</strong>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     <div class="card mb-4">
         <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
             <div>

@@ -72,7 +72,7 @@
     </div>
 
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-4">
             <x-form-input
                 name="horaires"
                 label="Horaires"
@@ -80,7 +80,17 @@
                 placeholder="Ex. 08:00 - 20:00"
             />
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
+            <x-form-input
+                name="capacite"
+                type="number"
+                label="Capacité (personnes)"
+                :value="old('capacite', $pointFraicheur->capacite ?? 50)"
+                placeholder="Ex. 50"
+                required
+            />
+        </div>
+        <div class="col-md-4">
             <div class="ve-form-group app-form-group">
                 <label for="accessible">Accessibilité</label>
                 <div class="form-check">

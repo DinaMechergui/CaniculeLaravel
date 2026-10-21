@@ -170,6 +170,21 @@
                     </aside>
                 @endif
             </div>
+
+            {{-- Assistant IA intégré : même moteur que /assistant,
+                 conscient des filtres actuellement appliqués --}}
+            @include('front.partials.chat-ia', [
+                'chatId' => 'ai-embed',
+                'titre' => 'Une question sur ces lieux ?',
+                'sousTitre' => "L'assistant connaît les 30 points de fraîcheur et vos filtres actuels : type, adresse, horaires, conseils anti-chaleur.",
+                'avecFiltres' => true,
+                'bienvenue' => "Bonjour ! Je suis l'assistant IA d'Alerte Canicule. Je réponds sur les lieux affichés dans cette page : essayez « Où me rafraîchir près de La Marsa ? » ou « Quels horaires pour le parc ? ».",
+                'questions' => [
+                    'Où me rafraîchir avec ces filtres ?',
+                    'Quels conseils contre la chaleur aujourd’hui ?',
+                    'Quel lieu est ouvert maintenant ?',
+                ],
+            ])
         </div>
     </section>
 @endsection

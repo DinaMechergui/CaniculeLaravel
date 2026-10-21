@@ -253,7 +253,7 @@
     }
 }
 
-/* --- Module « Points de fraîcheur » --- */
+/* --- Module ï¿½ Points de fraï¿½cheur ï¿½ --- */
 .pf-section {
     background: var(--ve-light);
 }
@@ -321,7 +321,7 @@
     text-decoration: underline;
 }
 
-/* Grille des points de fraîcheur */
+/* Grille des points de fraï¿½cheur */
 .pf-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -430,7 +430,7 @@
     text-decoration: underline;
 }
 
-/* État « aucun résultat » */
+/* ï¿½tat ï¿½ aucun rï¿½sultat ï¿½ */
 .pf-empty {
     grid-column: 1 / -1;
     text-align: center;
@@ -475,7 +475,7 @@
     color: var(--ve-dark);
 }
 
-/* Détail d'un point */
+/* Dï¿½tail d'un point */
 .pf-detail-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -558,7 +558,7 @@
     margin-top: 10px;
 }
 
-/* --- Responsive : module points de fraîcheur --- */
+/* --- Responsive : module points de fraï¿½cheur --- */
 @media (max-width: 991px) {
     .pf-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -589,12 +589,12 @@
     }
 }
 
-/* --- Carte interactive (module Points de fraîcheur) --- */
+/* --- Carte interactive (module Points de fraï¿½cheur) --- */
 .pf-map-section {
     background: var(--ve-light);
 }
 
-/* Barre d'outils : filtre + géolocalisation */
+/* Barre d'outils : filtre + gï¿½olocalisation */
 .pf-map-toolbar {
     display: flex;
     flex-wrap: wrap;
@@ -657,7 +657,7 @@
     color: var(--ve-gold);
 }
 
-/* Messages (géolocalisation, erreurs) */
+/* Messages (gï¿½olocalisation, erreurs) */
 .pf-map-message {
     max-width: 820px;
     margin: 0 auto 22px;
@@ -688,7 +688,7 @@
     color: #b92c32;
 }
 
-/* État « aucun point » */
+/* ï¿½tat ï¿½ aucun point ï¿½ */
 .pf-map-empty {
     text-align: center;
     background: #fff;
@@ -709,7 +709,7 @@
     margin-bottom: 18px;
 }
 
-/* Disposition : carte à gauche, liste à droite */
+/* Disposition : carte ï¿½ gauche, liste ï¿½ droite */
 .pf-map-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 340px;
@@ -726,7 +726,7 @@
     z-index: 0;
 }
 
-/* Liste latérale */
+/* Liste latï¿½rale */
 .pf-map-side {
     display: flex;
     flex-direction: column;
@@ -824,7 +824,7 @@
     font-weight: 800;
 }
 
-/* Fenêtres (popups) des marqueurs */
+/* Fenï¿½tres (popups) des marqueurs */
 .pf-popup {
     display: flex;
     flex-direction: column;
@@ -1113,4 +1113,248 @@
         flex-wrap: wrap;
         gap: 10px;
     }
+}
+
+/* --- Assistant IA (chatbot front office) --- */
+.ai-section {
+    padding-top: 60px;
+}
+
+.ai-panel {
+    max-width: 860px;
+    margin: 0 auto;
+    background: #fff;
+    border: 1px solid var(--ve-border);
+    border-radius: var(--ve-radius);
+    box-shadow: 0 18px 40px rgba(13, 27, 42, 0.08);
+    padding: 18px;
+}
+
+.ai-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-height: 460px;
+    min-height: 240px;
+    overflow-y: auto;
+    padding: 6px 4px;
+    background: #f7f8fa;
+    border: 1px solid var(--ve-border);
+    border-radius: var(--ve-radius);
+}
+
+.ai-msg {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    max-width: 85%;
+}
+
+.ai-msg.ai-user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.ai-avatar {
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--ve-dark);
+    color: var(--ve-gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.ai-msg.ai-user .ai-avatar {
+    background: var(--ve-gold);
+    color: var(--ve-dark);
+}
+
+.ai-bubble {
+    padding: 11px 15px;
+    border: 1px solid var(--ve-border);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--ve-text);
+    font-size: 15px;
+    line-height: 1.6;
+    white-space: pre-line;
+    word-break: break-word;
+}
+
+.ai-msg.ai-user .ai-bubble {
+    background: var(--ve-dark);
+    border-color: var(--ve-dark);
+    color: #fff;
+}
+
+.ai-typing {
+    font-style: italic;
+    color: var(--ve-muted, #6b7280);
+}
+
+.ai-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 14px 0 12px;
+}
+
+.ai-chip {
+    padding: 8px 14px;
+    border: 1px solid var(--ve-border);
+    border-radius: 20px;
+    background: #fff;
+    color: var(--ve-text);
+    font-size: 13px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: var(--ve-trans);
+}
+
+.ai-chip:hover {
+    border-color: var(--ve-gold);
+    color: var(--ve-gold);
+}
+
+.ai-form {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.ai-input {
+    flex: 1 1 auto;
+    min-height: 48px;
+    max-height: 140px;
+    padding: 13px 15px;
+    border: 1px solid var(--ve-border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--ve-text);
+    background: #fff;
+    resize: none;
+    outline: none;
+    transition: var(--ve-trans);
+}
+
+.ai-input:focus {
+    border-color: var(--ve-gold);
+}
+
+.ai-send {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.ai-hint {
+    margin: 12px 0 0;
+    font-size: 13px;
+    color: var(--ve-muted, #6b7280);
+}
+
+.ai-hint i {
+    color: var(--ve-gold);
+}
+
+/* --- Responsive : assistant IA --- */
+@media (max-width: 640px) {
+    .ai-panel {
+        padding: 14px;
+    }
+
+    .ai-messages {
+        max-height: 380px;
+    }
+
+    .ai-msg {
+        max-width: 96%;
+    }
+
+    .ai-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .ai-send {
+        width: 100%;
+    }
+}
+
+/* --- Assistant IA integre a la page points de fraicheur --- */
+.ai-embed {
+    max-width: none;
+    margin-top: 34px;
+}
+
+.ai-embed .ai-messages {
+    max-height: 360px;
+}
+
+.ai-embed-head {
+    margin-bottom: 14px;
+}
+
+.ai-embed-head .ve-section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.ai-embed-head h3 {
+    margin: 10px 0 6px;
+    font-size: 24px;
+    color: var(--ve-dark);
+}
+
+.ai-embed-head p {
+    margin: 0;
+    color: var(--ve-text);
+    font-size: 15px;
+}
+
+.ai-hint a {
+    display: inline-block;
+    margin-left: 6px;
+    color: var(--ve-gold);
+    font-weight: 700;
+}
+
+.ai-hint a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+    .ai-embed-head h3 {
+        font-size: 20px;
+    }
+}
+
+/* ============================================================
+   Boutons Â« fantÃ´me Â» lisibles sur fond clair
+   ------------------------------------------------------------
+   .ve-btn-ghost est dÃ©fini en texte blanc (conÃ§u pour la
+   banniÃ¨re sombre de l'accueil et l'en-tÃªte fixe). Sur les
+   pages claires (rÃ©servations, recherche, carte, listesâ€¦)
+   ce texte blanc devient invisible : il n'apparaÃ®t qu'au
+   survol. On redÃ©finit ici la variante Â« fond clair Â» et on
+   laisse les contextes sombres (.ve-header, .ve-hero) intactes.
+   ============================================================ */
+.ve-section .ve-btn-ghost,
+.app-inner-section .ve-btn-ghost {
+    color: var(--ve-dark);
+    border-color: var(--ve-gold);
+    background: var(--ve-white);
+}
+
+.ve-section .ve-btn-ghost:hover,
+.app-inner-section .ve-btn-ghost:hover {
+    color: var(--ve-dark);
+    border-color: var(--ve-gold);
+    background: rgba(212, 160, 23, 0.18);
 }

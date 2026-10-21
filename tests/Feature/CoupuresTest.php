@@ -259,4 +259,52 @@ class CoupuresTest extends TestCase
             ->assertRedirect('/admin/coupures')->assertSessionHas('success');
         $this->assertDatabaseMissing('coupures', ['id' => $coupure->id]);
     }
+
+    public function test_admin_can_predict_outage_end_time_via_ajax(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $quartier = Quartier::factory()->create();
+
+        $response = $this->actingAs($admin)->postJson('/admin/coupures/predire-fin', [
+            'quartier_id' => $quartier->id,
+            'type'        => 'panne',
+            'date_debut'  => '2026-10-08T14:00',
+            'description' => 'Panne transformateur',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonStructure([
+                'duree_minutes',
+                'duree_formatee',
+                'date_fin_estimee',
+                'date_fin_iso',
+                'confiance',
+                'explication',
+            ]);
+    }
+
+    public function test_system_alerts_admin_when_quartier_has_many_outages(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $quartier = Quartier::factory()->create();
+
+        // Créer 2 coupures préalables
+        Coupure::factory()->count(2)->for($quartier)->create();
+
+        // En enregistrant la 3ème coupure (seuil = 3), une alerte administrative est déclenchée
+        $this->actingAs($admin)->post('/admin/coupures', [
+            'quartier_id' => $quartier->id,
+            'type'        => 'surcharge',
+            'statut'      => 'en_cours',
+            'date_debut'  => '2026-10-08T15:00',
+            'description' => 'Surcharge forte chaleur',
+        ])->assertRedirect('/admin/coupures')
+          ->assertSessionHas('warning');
+
+        // Vérifier que la notification existe en base de données pour l'administrateur
+        $this->assertDatabaseHas('notifications', [
+            'notifiable_id' => $admin->id,
+        ]);
+    }
 }
+

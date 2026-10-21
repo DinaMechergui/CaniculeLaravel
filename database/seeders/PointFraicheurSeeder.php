@@ -211,6 +211,17 @@ class PointFraicheurSeeder extends Seeder
     ];
 
     /**
+     * Capacité d'accueil par type de point (nombre de personnes).
+     *
+     * @var array<string, int>
+     */
+    private const CAPACITES = [
+        'Parc' => 100,
+        'Salle climatisée' => 40,
+        'Plage' => 150,
+    ];
+
+    /**
      * Run the database seeds.
      */
     public function run(): void
@@ -225,15 +236,17 @@ class PointFraicheurSeeder extends Seeder
             }
 
             foreach ($lieux as $lieu) {
-                PointFraicheur::create([
-                    'type_point_id' => $type->id,
-                    'nom' => $lieu['nom'],
-                    'adresse' => $lieu['adresse'],
-                    'latitude' => $lieu['latitude'],
-                    'longitude' => $lieu['longitude'],
-                    'horaires' => $lieu['horaires'] ?? null,
-                    'accessible' => true,
-                ]);
+                PointFraicheur::updateOrCreate(
+                    ['nom' => $lieu['nom'], 'adresse' => $lieu['adresse']],
+                    [
+                        'type_point_id' => $type->id,
+                        'latitude' => $lieu['latitude'],
+                        'longitude' => $lieu['longitude'],
+                        'horaires' => $lieu['horaires'] ?? null,
+                        'accessible' => true,
+                        'capacite' => self::CAPACITES[$typeNom] ?? 50,
+                    ]
+                );
             }
         }
     }

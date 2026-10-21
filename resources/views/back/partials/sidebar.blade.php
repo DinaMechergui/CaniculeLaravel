@@ -52,6 +52,17 @@
             </a>
         </li>
 
+        {{-- Module « Réservations » --}}
+        <li class="menu-header small text-uppercase">
+            <span class="menu-header-text">Réservations</span>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.reservations.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.reservations.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-calendar-check"></i>
+                <div data-i18n="Réservations">Réservations</div>
+            </a>
+        </li>
+
         {{-- Module « Coupures » --}}
         <li class="menu-header small text-uppercase">
             <span class="menu-header-text">Coupures</span>
@@ -84,6 +95,80 @@
             <a href="{{ route('admin.smartgrid.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-map-pin"></i>
                 <div data-i18n="SmartGrid AI">SmartGrid AI</div>
+            </a>
+        </li>
+
+        {{-- Module « Alertes » --}}
+        <li class="menu-header small text-uppercase">
+            <span class="menu-header-text">Gestion des alertes</span>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.alertes.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.alertes.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-bell"></i>
+                <div data-i18n="Alertes">Alertes</div>
+            </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.bulletins-alerte.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.bulletins-alerte.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-file"></i>
+                <div data-i18n="Bulletins de suivi">Bulletins de suivi</div>
+            </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.diffusions.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.diffusions.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-broadcast"></i>
+                <div data-i18n="Diffusions">Diffusions</div>
+            </a>
+        </li>
+
+        {{-- Module « Conseils » --}}
+        <li class="menu-header small text-uppercase">
+            <span class="menu-header-text">Conseils</span>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.categories-conseil.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.categories-conseil.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-bulb"></i>
+                <div data-i18n="Catégories de conseils">Catégories de conseils</div>
+            </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.conseils.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.conseils.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-message-square-detail"></i>
+                <div data-i18n="Conseils">Conseils</div>
+            </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.campagnes-conseil.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.campagnes-conseil.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-broadcast"></i>
+                <div data-i18n="Campagnes">Campagnes</div>
+            </a>
+        </li>
+
+        <li class="menu-header small text-uppercase"><span class="menu-header-text">Préparation</span></li>
+        <li class="menu-item {{ request()->routeIs('admin.plans-urgence.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.plans-urgence.index') }}" class="menu-link"><i class="menu-icon tf-icons bx bx-shield-alt-2"></i><div>Plans d'urgence</div></a>
+        </li>
+
+        {{-- Module « Signalements » --}}
+        <li class="menu-header small text-uppercase">
+            <span class="menu-header-text">Signalements</span>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.types-signalement.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.types-signalement.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-category-alt"></i>
+                <div data-i18n="Types de signalements">Types de signalements</div>
+            </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.signalements.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.signalements.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-error-alt"></i>
+                <div data-i18n="Signalements">Signalements</div>
+            </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.diagnostics.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.diagnostics.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-wrench"></i>
+                <div data-i18n="Diagnostics">Diagnostics</div>
             </a>
         </li>
 

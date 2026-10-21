@@ -62,6 +62,26 @@ de la carte « Près de moi » représentatif de la réalité.
 
 ---
 
+## Assistant IA (chatbot)
+
+Route publique `GET /assistant` (entrée « Assistant IA » du menu) et point
+d'entrée `POST /assistant` qui renvoie `{ "reponse": "…" }` en JSON.
+
+- **Fournisseur** : OpenRouter (`/api/v1/chat/completions`), modèle
+  `openai/gpt-4o-mini` par défaut, surchargeable via `OPENROUTER_MODEL`.
+- **Configuration** : la clé n'est lue que dans `.env` (`OPENROUTER_API_KEY`),
+  fichier ignoré par git ; seule la variable vide est présente dans
+  `.env.example` — la clé n'est **jamais** commitée.
+- **Contexte (RAG minimal)** : chaque requête envoie au modèle la liste des 30
+  points (nom, type, adresse, coordonnées, horaires, accessibilité) issues de
+  la base via Eloquent : les réponses s'appuient sur des données réelles.
+- **Sécurité** : message validé (2 à 1000 caractères), historique limité à 12
+  échanges, réponses insérées en `textContent` (aucune HTMLisation), messages
+  d'erreur français (503 clé manquante, 502 panne du fournisseur).
+- **Tests** : `tests/Feature/AssistantIaTest.php` (5 tests avec `Http::fake`).
+
+---
+
 ## Arborescence (front office / back office séparés)
 
 ```
@@ -97,6 +117,7 @@ C:\laravel project\
 │   │   │   │   ├── RegisteredUserController.php
 │   │   │   │   └── VerifyEmailController.php
 │   │   │   ├── HomeController.php          page d'accueil /
+│   │   │   ├── AssistantController.php     assistant IA /assistant (chatbot)
 │   │   │   ├── PointFraicheurController.php /points-fraicheur (public)
 │   │   │   └── ProfileController.php       /profile
 │   │   └── Requests/
@@ -143,6 +164,8 @@ C:\laravel project\
 │   │   │       ├── update-profile-information-form.blade.php
 │   │   │       ├── update-password-form.blade.php
 │   │   │       └── delete-user-form.blade.php
+│   │   ├── assistant/
+│   │   │   └── index.blade.php             chatbot IA (OpenRouter)
 │   │   └── points-fraicheur/               MODULE : pages publiques
 │   │       ├── index.blade.php             liste + filtre type + recherche
 │   │       ├── carte.blade.php             carte Leaflet + « Près de moi »
@@ -212,6 +235,7 @@ C:\laravel project\
 ├── tests/
 │   ├── Feature/
 │   │   ├── AdminAccessTest.php             403 back office, accès admin
+│   │   ├── AssistantIaTest.php             assistant IA (chatbot, Http::fake)
 │   │   ├── PagesRenderTest.php             rendu de toutes les pages
 │   │   ├── PointsFraicheurTest.php         module points de fraîcheur
 │   │   ├── ProfileTest.php
