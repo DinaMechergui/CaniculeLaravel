@@ -37,7 +37,9 @@ class PrevisionService
                     Prevision::updateOrCreate(
                         [
                             'point_fraicheur_id' => $point->id,
-                            'date' => $date->toDateString(),
+                            // Carbon plutôt que chaîne : évite les doublons
+                            // quand la colonne est un datetime (SQLite).
+                            'date' => $date,
                         ],
                         [
                             'capacite' => $capacite,

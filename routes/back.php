@@ -75,6 +75,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     // Rédaction assistée par l'IA (AJAX depuis la fiche réservation).
     Route::post('reservations/{reservation}/reponse-ia', [ReservationController::class, 'reponseIa'])
         ->name('reservations.reponse-ia');
+    // Envoi de la réponse rédigée au visiteur (AJAX depuis la fiche).
+    Route::post('reservations/{reservation}/envoyer-reponse', [ReservationController::class, 'envoyerReponse'])
+        ->name('reservations.envoyer-reponse');
 
     // Module « Coupures » : les quartiers (parent) et les coupures (enfant).
     Route::resource('quartiers', QuartierController::class);

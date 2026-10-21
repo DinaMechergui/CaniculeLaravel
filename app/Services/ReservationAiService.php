@@ -538,28 +538,55 @@ class ReservationAiService
     }
 
     /**
-     * Rédige une réponse assistée qu'un administrateur pourra envoyer au visiteur.
+     * Rédige une réponse assistée par l'IA : e-mail FINAL, complet et prêt
+     * à envoyer (aucun emplacement du type « [Votre nom] » à remplir).
+     *
+     * @param  string|null  $expediteur  Nom de l'administrateur connecté (signature).
      */
-    public function redigerReponse(Reservation $reservation): string
+    public function redigerReponse(Reservation $reservation, ?string $expediteur = null): string
     {
         $point = $reservation->pointFraicheur?->nom ?? 'point de fraîcheur';
         $date = $reservation->date_reservation?->format('d/m/Y') ?? '';
         $statut = $reservation->statut_label;
+
+        $signature = 'L\'équipe Alerte Canicule'
+            . ($expediteur !== null && trim($expediteur) !== '' ? ' — '.trim($expediteur) : '');
 
         $secours = "Bonjour {$reservation->nom},\n\n"
             . "Nous avons bien reçu votre demande concernant le point de fraîcheur « {$point} » "
             . "pour le {$date} ({$statut}).\n\n"
             . "N'hésitez pas à nous préciser toute information utile (heure souhaitée, besoins particuliers) "
             . "et nous vous répondrons dans les plus brefs délais.\n\n"
-            . "Cordialement,\nL'équipe Alerte Canicule";
+            . "Cordialement,\n{$signature}";
 
-        $systeme = "Tu rédiges un e-mail de réponse courtois et professionnel (en français) "
-            . "au nom de l'équipe « Alerte Canicule » d'une application de lutte contre la canicule. "
-            . 'Laisse des espaces à compléter par l\'administrateur. Réponds uniquement par le texte de l\'e-mail.';
-        $prompt = "Destinataire : {$reservation->nom}. Point de fraîcheur : {$point}. "
-            . "Date : {$date}. Statut de la réservation : {$statut}. "
-            . "Besoins signalés : " . (string) $reservation->besoins_specifiques . '.';
+        $systeme = "Tu rédiges la version FINALE d'un e-mail de réponse, complète et prête à envoyer (en français), "
+            . "au nom de « Alerte Canicule », application de lutte contre la canicule en Tunisie. "
+            . "Tu t'adresses au visiteur : salue-le par son nom (fourni dans le prompt), jamais par un emplacement. "
+            . "N'utilise AUCUN texte entre crochets du type [Nom], [Votre nom], [Votre fonction], [Vos coordonnées] : "
+            . "écris directement le contenu final à la place. "
+            . 'Termine par « Cordialement » puis cette signature exacte : '.$signature.'. '
+            . "Réponds uniquement par le texte de l'e-mail, sans objet ni commentaires.";
 
-        return $this->ia->texte($systeme, $prompt, $secours);
+        $besoins = trim((string) $reservation->besoins_specifiques);
+        $prompt = "Destinataire (visiteur) : {$reservation->nom}. Point de fraîcheur : {$point}. "
+            . "Date : {$date}. Statut : {$statut}. "
+            . 'Besoins signalés : '.($besoins !== '' ? $besoins : 'aucun').'.';
+
+        return $this->nettoyerPlaceholders($this->ia->texte($systeme, $prompt, $secours));
+    }
+
+    /**
+     * Filet de sécurité : supprime les emplacements résiduels du type
+     * « [Nom] » éventuellement produits par le modèle et referme les
+     * salutations orphelines (« Bonjour , »).
+     */
+    protected function nettoyerPlaceholders(string $texte): string
+    {
+        $texte = preg_replace('/\[[^\]\r\n]*\]/u', '', $texte) ?? $texte;
+        $texte = preg_replace('/\bBonjour\s*,/u', 'Bonjour,', $texte) ?? $texte;
+        $texte = preg_replace('/[ \t]+$/m', '', $texte) ?? $texte;
+        $texte = preg_replace('/\n{3,}/u', "\n\n", $texte) ?? $texte;
+
+        return trim($texte);
     }
 }

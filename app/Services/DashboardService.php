@@ -55,7 +55,9 @@ class DashboardService
 
         Dashboard::updateOrCreate(
             [
-                'date' => $date,
+                // Carbon plutôt que chaîne : la comparaison fonctionne sur
+                // MySQL (DATE) comme sur SQLite ('Y-m-d H:i:s' stocké).
+                'date' => \Illuminate\Support\Carbon::parse($date),
                 'point_fraicheur_id' => $pointId,
             ],
             [
