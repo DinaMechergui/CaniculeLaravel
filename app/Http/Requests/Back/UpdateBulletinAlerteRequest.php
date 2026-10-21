@@ -2,97 +2,25 @@
 
 namespace App\Http\Requests\Back;
 
-use App\Models\Alerte;
 use App\Models\BulletinAlerte;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Validator;
 
-class UpdateBulletinAlerteRequest extends FormRequest
+class UpdateBulletinAlerteRequest extends StoreBulletinAlerteRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Pour une mise à jour d'un bulletin existant, ne pas bloquer si l'alerte est terminée.
      */
-    public function authorize(): bool
+    protected function checkStatutTerminee(): bool
     {
-        return true;
+        return false;
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * Exclut le bulletin courant lors de la comparaison de rang d'aggravation.
      */
-    public function rules(): array
+    protected function getExcludedBulletinId(): ?int
     {
-        return [
-            'alerte_id' => ['required', 'exists:alertes,id'],
-            'niveau' => ['required', 'in:vert,jaune,orange,rouge'],
-            'evolution' => ['required', 'in:aggravation,stable,amelioration,levee'],
-            'message' => ['required', 'string'],
-            'conduite_a_tenir' => ['nullable', 'string'],
-            'temperature_max' => ['nullable', 'integer', 'between:0,60'],
-            'date_publication' => ['required', 'date', 'before_or_equal:now'],
-        ];
-    }
+        $param = $this->route('bulletin_alerte');
 
-    /**
-     * Custom validation rules and cross-field logic.
-     */
-    public function withValidator(Validator $validator): void
-    {
-        $validator->after(function (Validator $validator) {
-            $alerteId = $this->input('alerte_id');
-            if (!$alerteId) {
-                return;
-            }
-
-            $alerte = Alerte::find($alerteId);
-            if (!$alerte) {
-                return;
-            }
-
-            $currentBulletinId = $this->route('bulletin_alerte') instanceof BulletinAlerte
-                ? $this->route('bulletin_alerte')->id
-                : $this->route('bulletin_alerte');
-
-            $evolution = $this->input('evolution');
-            $niveau = $this->input('niveau');
-
-            if ($evolution === 'aggravation' && $niveau) {
-                $dernierBulletin = $alerte->bulletins()
-                    ->when($currentBulletinId, fn ($q) => $q->where('id', '!=', $currentBulletinId))
-                    ->orderBy('date_publication', 'desc')
-                    ->first();
-
-                if ($dernierBulletin) {
-                    $ranks = BulletinAlerte::NIVEAU_RANKS;
-                    $currentRank = $ranks[$niveau] ?? 0;
-                    $previousRank = $ranks[$dernierBulletin->niveau] ?? 0;
-
-                    if ($currentRank < $previousRank) {
-                        $validator->errors()->add(
-                            'niveau',
-                            "En cas d'aggravation, le niveau de vigilance ({$niveau}) doit être supérieur ou égal à celui du bulletin précédent ({$dernierBulletin->niveau})."
-                        );
-                    }
-                }
-            }
-        });
-    }
-
-    /**
-     * Custom attribute names for validation errors.
-     */
-    public function attributes(): array
-    {
-        return [
-            'alerte_id' => 'alerte parente',
-            'niveau' => 'niveau de vigilance',
-            'evolution' => 'évolution de la situation',
-            'message' => 'message officiel',
-            'conduite_a_tenir' => 'conduite à tenir',
-            'temperature_max' => 'température maximale prévue',
-            'date_publication' => 'date et heure de publication',
-        ];
+        return $param instanceof BulletinAlerte ? $param->id : (is_numeric($param) ? (int) $param : null);
     }
 }

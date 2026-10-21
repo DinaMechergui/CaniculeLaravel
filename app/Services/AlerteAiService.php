@@ -113,54 +113,15 @@ class AlerteAiService
             . "  \"temperature_max\": 42\n"
             . "}";
 
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}";
-
-        $response = Http::timeout(10)->post($url, [
-            'contents' => [
-                ['role' => 'user', 'parts' => [['text' => $prompt]]]
-            ],
-            'generationConfig' => [
-                'responseMimeType' => 'application/json',
-                'temperature' => 0.3,
-            ]
-        ]);
-
-        if ($response->successful()) {
-            $text = $response->json('candidates.0.content.parts.0.text');
-            if ($text) {
-                return json_decode($text, true);
-            }
-        }
-
-        return null;
+        return $this->requestGeminiJson($prompt, $apiKey, 0.3);
     }
 
     protected function callOpenRouterForBulletin(Alerte $alerte, ?string $keywords, string $apiKey): ?array
     {
-        $prompt = "Expert INM Tunisie. Bulletin météo pour alerte {$alerte->titre} ({$alerte->zone_concernee}), type {$alerte->type_label}, niveau actuel {$alerte->niveau_actuel}. Mots-clés : " . ($keywords ?: 'vigilance');
+        $system = "Réponds UNIQUEMENT en JSON avec : niveau (vert|jaune|orange|rouge), evolution (aggravation|stable|amelioration|levee), message, conduite_a_tenir, temperature_max (int ou null).";
+        $user = "Expert INM Tunisie. Bulletin météo pour alerte {$alerte->titre} ({$alerte->zone_concernee}), type {$alerte->type_label}, niveau actuel {$alerte->niveau_actuel}. Mots-clés : " . ($keywords ?: 'vigilance');
 
-        $url = config('services.openrouter.url', 'https://openrouter.ai/api/v1/chat/completions');
-        $model = config('services.openrouter.model', 'openai/gpt-4o-mini');
-
-        $response = Http::withToken($apiKey)->timeout(15)->post($url, [
-            'model' => $model,
-            'messages' => [
-                ['role' => 'system', 'content' => "Réponds UNIQUEMENT en JSON avec : niveau (vert|jaune|orange|rouge), evolution (aggravation|stable|amelioration|levee), message, conduite_a_tenir, temperature_max (int ou null)."],
-                ['role' => 'user', 'content' => $prompt],
-            ],
-            'temperature' => 0.3,
-        ]);
-
-        if ($response->successful()) {
-            $content = $response->json('choices.0.message.content');
-            if ($content) {
-                $clean = preg_replace('/^```(?:json)?\s*/i', '', trim($content));
-                $clean = preg_replace('/\s*```$/', '', $clean);
-                return json_decode($clean, true);
-            }
-        }
-
-        return null;
+        return $this->requestOpenRouterJson($system, $user, $apiKey, 0.3);
     }
 
     protected function callGeminiForDiffusion(BulletinAlerte $bulletin, string $canal, string $apiKey): ?array
@@ -181,6 +142,22 @@ class AlerteAiService
             . "Réponds UNIQUEMENT en JSON :\n"
             . "{\"contenu\": \"texte adapté sous 160 caractères\", \"destinataires_estimes\": 25000}";
 
+        return $this->requestGeminiJson($prompt, $apiKey, 0.2);
+    }
+
+    protected function callOpenRouterForDiffusion(BulletinAlerte $bulletin, string $canal, string $apiKey): ?array
+    {
+        $system = "Réponds en JSON avec 'contenu' (maximum absolu 160 caractères) et 'destinataires_estimes' (nombre entier).";
+        $user = "Adapte ce bulletin météo pour le canal {$canal} en Tunisie : {$bulletin->alerte->zone_concernee}, {$bulletin->niveau_label}, {$bulletin->message}.";
+
+        return $this->requestOpenRouterJson($system, $user, $apiKey, 0.2);
+    }
+
+    /**
+     * Envoie une requête à l'API Gemini et décode la réponse JSON.
+     */
+    protected function requestGeminiJson(string $prompt, string $apiKey, float $temperature = 0.3): ?array
+    {
         $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}";
 
         $response = Http::timeout(10)->post($url, [
@@ -189,7 +166,7 @@ class AlerteAiService
             ],
             'generationConfig' => [
                 'responseMimeType' => 'application/json',
-                'temperature' => 0.2,
+                'temperature' => $temperature,
             ]
         ]);
 
@@ -203,20 +180,21 @@ class AlerteAiService
         return null;
     }
 
-    protected function callOpenRouterForDiffusion(BulletinAlerte $bulletin, string $canal, string $apiKey): ?array
+    /**
+     * Envoie une requête à l'API OpenRouter et décode la réponse JSON.
+     */
+    protected function requestOpenRouterJson(string $system, string $user, string $apiKey, float $temperature = 0.3): ?array
     {
         $url = config('services.openrouter.url', 'https://openrouter.ai/api/v1/chat/completions');
         $model = config('services.openrouter.model', 'openai/gpt-4o-mini');
 
-        $prompt = "Adapte ce bulletin météo pour le canal {$canal} en Tunisie : {$bulletin->alerte->zone_concernee}, {$bulletin->niveau_label}, {$bulletin->message}.";
-
         $response = Http::withToken($apiKey)->timeout(15)->post($url, [
             'model' => $model,
             'messages' => [
-                ['role' => 'system', 'content' => "Réponds en JSON avec 'contenu' (maximum absolu 160 caractères) et 'destinataires_estimes' (nombre entier)."],
-                ['role' => 'user', 'content' => $prompt],
+                ['role' => 'system', 'content' => $system],
+                ['role' => 'user', 'content' => $user],
             ],
-            'temperature' => 0.2,
+            'temperature' => $temperature,
         ]);
 
         if ($response->successful()) {

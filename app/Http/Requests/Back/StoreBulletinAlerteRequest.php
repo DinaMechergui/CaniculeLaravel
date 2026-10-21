@@ -36,6 +36,22 @@ class StoreBulletinAlerteRequest extends FormRequest
     }
 
     /**
+     * Hook determining whether to block adding bulletin to terminated alerte.
+     */
+    protected function checkStatutTerminee(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Hook returning bulletin ID to exclude when comparing aggravation level.
+     */
+    protected function getExcludedBulletinId(): ?int
+    {
+        return null;
+    }
+
+    /**
      * Custom validation rules and cross-field logic.
      */
     public function withValidator(Validator $validator): void
@@ -52,7 +68,7 @@ class StoreBulletinAlerteRequest extends FormRequest
             }
 
             // Règle 1 : Impossible d'ajouter un bulletin à une alerte terminée
-            if ($alerte->statut === 'terminee') {
+            if ($this->checkStatutTerminee() && $alerte->statut === 'terminee') {
                 $validator->errors()->add(
                     'alerte_id',
                     'Impossible d\'ajouter un bulletin à une alerte terminée.'
@@ -65,7 +81,11 @@ class StoreBulletinAlerteRequest extends FormRequest
             $niveau = $this->input('niveau');
 
             if ($evolution === 'aggravation' && $niveau) {
-                $dernierBulletin = $alerte->bulletins()->orderBy('date_publication', 'desc')->first();
+                $excludedId = $this->getExcludedBulletinId();
+                $dernierBulletin = $alerte->bulletins()
+                    ->when($excludedId, fn ($q) => $q->where('id', '!=', $excludedId))
+                    ->orderBy('date_publication', 'desc')
+                    ->first();
 
                 if ($dernierBulletin) {
                     $ranks = BulletinAlerte::NIVEAU_RANKS;
