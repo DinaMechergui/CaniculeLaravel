@@ -8,11 +8,13 @@ use App\Models\Prevision;
 use App\Models\Reservation;
 use App\Models\User;
 use App\Notifications\ReservationConfirmee;
+use App\Notifications\ReservationReponse;
 use App\Services\DashboardService;
 use App\Services\PrevisionService;
 use App\Services\ReservationAiService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 /**
@@ -116,6 +118,51 @@ class ReservationAiTest extends TestCase
     | Score de risque de non-présentation
     |--------------------------------------------------------------------------
     */
+
+    public function test_editing_a_reservation_recalculates_the_no_show_score(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $point = PointFraicheur::factory()->create(['capacite' => 50]);
+
+        $reservation = Reservation::factory()->create([
+            'point_fraicheur_id' => $point->id,
+            'email' => 'fiable@example.com',
+            'statut' => Reservation::STATUT_EN_ATTENTE,
+            'date_reservation' => now()->addDays(10)->toDateString(),
+            'heure_debut' => '09:00',
+            'heure_fin' => '10:00',
+            'nombre_personnes' => 1,
+            'besoins_specifiques' => null,
+        ]);
+
+        app(ReservationAiService::class)->analyser($reservation);
+        $avant = (float) $reservation->fresh()->score_risque_no_show;
+
+        // Modification côté back office : le score doit être recalculé,
+        // sinon il reste celui calculé à la création (valeurs périmées).
+        $this->actingAs($admin)->put("/admin/reservations/{$reservation->id}", [
+            'point_fraicheur_id' => $point->id,
+            'nom' => $reservation->nom,
+            'email' => 'robot@yopmail.com',
+            'telephone' => $reservation->telephone,
+            'nombre_personnes' => 2,
+            'date_reservation' => $reservation->date_reservation->toDateString(),
+            'heure_debut' => '09:00',
+            'heure_fin' => '10:00',
+            'statut' => Reservation::STATUT_EN_ATTENTE,
+            'besoins_specifiques' => null,
+            'notes_admin' => null,
+        ])->assertRedirect('/admin/reservations');
+
+        $apres = (float) $reservation->fresh()->score_risque_no_show;
+
+        // +20 pour l'adresse jetable : le score augmente après édition.
+        $this->assertGreaterThan($avant, $apres);
+        $this->assertSame(
+            $apres,
+            (float) app(ReservationAiService::class)->scoreNoShow($reservation->fresh())
+        );
+    }
 
     public function test_disposable_email_increases_no_show_score(): void
     {
@@ -290,6 +337,25 @@ class ReservationAiTest extends TestCase
         $this->assertStringContainsString('Karim', $texte);
     }
 
+    public function test_assisted_reply_contains_no_placeholder(): void
+    {
+        $this->ouvrirIa();
+        Http::fake(['*' => Http::response($this->reponseIa(
+            "Bonjour [Nom de l'administrateur],\n\n"
+            ."Votre demande est prise en compte.\n\n"
+            ."Cordialement,\nL'équipe « Alerte Canicule » [Votre nom] [Votre fonction] [Vos coordonnées]"
+        ))]);
+
+        $reservation = Reservation::factory()->create(['nom' => 'Karim'])->load('pointFraicheur');
+
+        $texte = app(ReservationAiService::class)->redigerReponse($reservation, 'Admin Test');
+
+        // Aucun emplacement à remplir : le texte est prêt à l'envoi.
+        $this->assertStringNotContainsString('[', $texte);
+        $this->assertStringContainsString('Cordialement', $texte);
+        $this->assertStringContainsString('prise en compte', $texte);
+    }
+
     public function test_admin_can_generate_an_assisted_reply(): void
     {
         $admin = User::factory()->admin()->create();
@@ -299,6 +365,45 @@ class ReservationAiTest extends TestCase
             ->postJson(route('admin.reservations.reponse-ia', $reservation))
             ->assertOk()
             ->assertJsonStructure(['reponse']);
+    }
+
+    public function test_admin_can_send_the_assisted_reply_to_the_visitor(): void
+    {
+        Notification::fake();
+
+        $admin = User::factory()->admin()->create();
+        $reservation = Reservation::factory()->create(['email' => 'visiteur@example.com']);
+
+        $this->actingAs($admin)
+            ->postJson(route('admin.reservations.envoyer-reponse', $reservation), [
+                'reponse' => "Bonjour,\n\nVotre créneau est bien maintenu.",
+            ])
+            ->assertOk()
+            ->assertJson(['message' => 'Réponse envoyée à visiteur@example.com']);
+
+        Notification::assertSentOnDemand(
+            ReservationReponse::class,
+            fn (ReservationReponse $notification): bool => $notification->reservation->is($reservation)
+                && str_contains($notification->reponse, 'créneau est bien maintenu')
+        );
+    }
+
+    public function test_sending_a_reply_requires_a_meaningful_text(): void
+    {
+        Notification::fake();
+
+        $admin = User::factory()->admin()->create();
+        $reservation = Reservation::factory()->create();
+
+        $this->actingAs($admin)
+            ->postJson(route('admin.reservations.envoyer-reponse', $reservation), ['reponse' => ''])
+            ->assertStatus(422);
+
+        $this->actingAs($admin)
+            ->postJson(route('admin.reservations.envoyer-reponse', $reservation), ['reponse' => 'court'])
+            ->assertStatus(422);
+
+        Notification::assertNothingSent();
     }
 
     /*
@@ -383,6 +488,59 @@ class ReservationAiTest extends TestCase
             ->assertRedirect();
 
         $this->assertSame(7, Prevision::count());
+    }
+
+    public function test_regenerating_analytics_purges_demo_data_and_rebuilds_14_days(): void
+    {
+        $point = PointFraicheur::factory()->create(['capacite' => 20]);
+        $admin = User::factory()->admin()->create();
+
+        // Fausse prévision de démo datée d'aujourd'hui (comme le seeder).
+        Prevision::create([
+            'point_fraicheur_id' => $point->id,
+            'date' => now()->toDateString(),
+            'capacite' => 20,
+            'reservations_prevues' => 18,
+            'taux_remplissage' => 90.0,
+            'source' => Prevision::SOURCE_LOCALE,
+            'explication' => 'Prévision de démonstration.',
+        ]);
+
+        // Instantané périmé de démo (valeurs inventées) daté d'il y a 10 jours.
+        Dashboard::create([
+            'date' => now()->subDays(10)->toDateString(),
+            'point_fraicheur_id' => null,
+            'total_reservations' => 99,
+            'total_personnes' => 999,
+            'en_liste_attente' => 0,
+            'taux_presence' => 50,
+            'taux_no_show' => 25,
+            'taux_annulation' => 10,
+            'score_risque_moyen' => null,
+            'source' => 'local',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.reservations.analytique.generer'))
+            ->assertRedirect();
+
+        // La fausse prévision du jour est purgée : il ne reste que les
+        // 7 jours réellement recalculés (tous à venir).
+        $this->assertSame(7, Prevision::count());
+        $this->assertSame(
+            7,
+            Prevision::whereDate('date', '>', now()->toDateString())->count()
+        );
+
+        // Les 14 derniers jours ont une ligne globale, recalculée à partir
+        // des vraies réservations : le faux total de 99 est écrasé.
+        $this->assertSame(14, Dashboard::whereNull('point_fraicheur_id')->count());
+
+        $recalcule = Dashboard::whereNull('point_fraicheur_id')
+            ->whereDate('date', now()->subDays(10)->toDateString())
+            ->firstOrFail();
+
+        $this->assertSame(0, (int) $recalcule->total_reservations);
     }
 
     /*

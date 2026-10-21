@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Back;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Back\UpdateReservationRequest;
+use App\Jobs\AnalyserReservationIa;
 use App\Models\Dashboard;
 use App\Models\PointFraicheur;
 use App\Models\Prevision;
 use App\Models\Reservation;
 use App\Notifications\ReservationAnnulee;
 use App\Notifications\ReservationConfirmee;
+use App\Notifications\ReservationReponse;
 use App\Services\DashboardService;
 use App\Services\PrevisionService;
 use App\Services\ReservationAiService;
@@ -79,6 +81,10 @@ class ReservationController extends Controller
     public function update(UpdateReservationRequest $request, Reservation $reservation): RedirectResponse
     {
         $reservation->update($request->validated());
+
+        // L'analyse IA (score de no-show, étiquettes, priorité) dépend des
+        // champs modifiés : on la relance pour éviter un score périmé.
+        AnalyserReservationIa::dispatch($reservation->id);
 
         return redirect()
             ->route('admin.reservations.index')
@@ -302,21 +308,51 @@ class ReservationController extends Controller
      */
     public function genererAnalytique(PrevisionService $previsions, DashboardService $dashboard): RedirectResponse
     {
-        $nombre = $previsions->generer(7);
-        $dashboard->snapshot();
+        // Purge des prévisions périmées (démo du seeder et dates passées) :
+        // seules les prévisions recalculées des 7 prochains jours restent.
+        Prevision::query()->whereDate('date', '<=', now()->toDateString())->delete();
 
-        return back()->with('success', "{$nombre} prévision(s) recalculée(s) et indicateurs mis à jour.");
+        // Indicateurs des 14 derniers jours (et non plus du seul jour
+        // courant) : les instantanés figés issus du seed sont écrasés.
+        foreach (range(13, 0) as $ecart) {
+            $dashboard->snapshot(now()->subDays($ecart)->toDateString());
+        }
+
+        $nombre = $previsions->generer(7);
+
+        return back()->with('success', "{$nombre} prévision(s) recalculée(s) et indicateurs des 14 derniers jours mis à jour.");
     }
 
     /**
-     * Rédaction assistée par l'IA d'une réponse à envoyer au visiteur.
+     * Réponse assistée par l'IA d'une réponse à envoyer au visiteur.
      */
     public function reponseIa(Reservation $reservation, ReservationAiService $ia): JsonResponse
     {
         $reservation->loadMissing('pointFraicheur');
 
         return response()->json([
-            'reponse' => $ia->redigerReponse($reservation),
+            'reponse' => $ia->redigerReponse($reservation, auth()->user()?->name),
+        ]);
+    }
+
+    /**
+     * Envoie au visiteur la réponse rédigée (et modifiée) par l'admin.
+     */
+    public function envoyerReponse(Request $request, Reservation $reservation): JsonResponse
+    {
+        $valide = $request->validate([
+            'reponse' => ['required', 'string', 'min:10', 'max:4000'],
+        ], [
+            'reponse.required' => 'La réponse ne peut pas être vide.',
+            'reponse.min' => 'La réponse doit contenir au moins 10 caractères.',
+            'reponse.max' => 'La réponse ne doit pas dépasser 4 000 caractères.',
+        ]);
+
+        Notification::route('mail', $reservation->email)
+            ->notify(new ReservationReponse($reservation, $valide['reponse']));
+
+        return response()->json([
+            'message' => "Réponse envoyée à {$reservation->email}",
         ]);
     }
 
