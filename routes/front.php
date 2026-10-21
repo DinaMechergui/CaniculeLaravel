@@ -103,6 +103,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/plans-urgence/{planUrgence}/reinitialiser', [PlanUrgenceController::class, 'reinitialiser'])->name('plans-urgence.reinitialiser');
 });
 // Module « Coupures » : pages publiques.
+Route::get('/coupures/carte', [CoupureController::class, 'map'])->name('coupures.map');
+Route::get('/coupures/carte/data', [CoupureController::class, 'mapData'])->name('coupures.map.data');
 Route::get('/coupures', [CoupureController::class, 'index'])->name('coupures.index');
 Route::get('/coupures/{coupure}', [CoupureController::class, 'show'])->name('coupures.show');
 

@@ -10,7 +10,12 @@ class UpdateQuartierRequest extends StoreQuartierRequest
     public function rules(): array
     {
         $rules = parent::rules();
-        $rules['nom'] = ['required', 'string', 'max:100', Rule::unique('quartiers', 'nom')->ignore($this->route('quartier'))];
+        $rules['nom'] = [
+            'required',
+            'string',
+            'max:100',
+            Rule::unique('quartiers', 'nom')->ignore($this->route('quartier')),
+        ];
 
         return $rules;
     }

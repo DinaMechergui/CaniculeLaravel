@@ -35,7 +35,6 @@
             </x-form-select>
         </div>
     </div>
-
     <div class="row g-3 mb-3">
         <div class="col-md-6">
             <x-form-input name="date_debut" type="datetime-local" label="Date et heure de début" :value="$coupure->date_debut?->format('Y-m-d\\TH:i')" required />
@@ -77,6 +76,12 @@
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
+
+    @include('back.partials.location-picker', [
+        'latitude' => $coupure->latitude,
+        'longitude' => $coupure->longitude,
+        'label' => 'Position précise de la coupure (facultative)',
+    ])
 
     <div class="d-flex gap-2 mt-4">
         <button class="btn btn-primary" type="submit">

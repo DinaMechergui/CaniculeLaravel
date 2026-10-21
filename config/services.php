@@ -35,6 +35,17 @@ return [
         ],
     ],
 
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY'),
+        'api_key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
+    ],
+
+    'openrouteservice' => [
+        'api_key' => env('OPENROUTESERVICE_API_KEY'),
+        'base_url' => env('OPENROUTESERVICE_BASE_URL', 'https://api.openrouteservice.org'),
+    ],
+
     // OpenRouter est utilisé par l'assistant public et la génération des conseils.
     'openrouter' => [
         'key' => env('OPENROUTER_API_KEY'),
@@ -43,11 +54,6 @@ return [
         'ca_bundle' => storage_path('app/openrouter-ca.pem'),
         'conseil_key' => env('OPENROUTER_CONSEIL_API_KEY', env('OPENROUTER_API_KEY')),
         'conseil_model' => env('OPENROUTER_CONSEIL_MODEL', env('OPENROUTER_MODEL', 'openai/gpt-4o-mini')),
-    ],
-
-    'gemini' => [
-        'key' => env('GEMINI_API_KEY'),
-        'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
     ],
 
 ];

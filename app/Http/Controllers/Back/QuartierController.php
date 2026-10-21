@@ -1,6 +1,6 @@
 <?php
 
-namespace App\BackOffice\Controllers;
+namespace App\Http\Controllers\Back;
 
 use App\BackOffice\Requests\StoreQuartierRequest;
 use App\BackOffice\Requests\UpdateQuartierRequest;

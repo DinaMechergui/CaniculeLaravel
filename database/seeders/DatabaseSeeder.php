@@ -63,6 +63,8 @@ class DatabaseSeeder extends Seeder
             TypeSignalementSeeder::class,
             SignalementSeeder::class,
             DiagnosticSeeder::class,  // Après SignalementSeeder (dépendance).
+            InterventionSeeder::class,
+            ImpactCoupureSeeder::class,
         ]);
     }
 }

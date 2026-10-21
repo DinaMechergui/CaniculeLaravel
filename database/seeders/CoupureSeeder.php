@@ -14,8 +14,7 @@ class CoupureSeeder extends Seeder
         $types = ['delestage', 'panne', 'surcharge'];
 
         foreach (Quartier::all() as $quartier) {
-            // Évite de recréer les coupures déjà générées pour ce quartier.
-            if (Coupure::where('quartier_id', $quartier->id)->exists()) {
+            if ($quartier->coupures()->exists()) {
                 continue;
             }
 

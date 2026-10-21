@@ -13,21 +13,24 @@
         */
 
 use App\BackOffice\Controllers\DashboardController;
-use App\BackOffice\Controllers\CoupureController;
 use App\BackOffice\Controllers\DiagnosticController;
 use App\BackOffice\Controllers\CategorieConseilController;
 use App\BackOffice\Controllers\CampagneConseilController;
 use App\BackOffice\Controllers\CampagneAiController;
 use App\BackOffice\Controllers\ConseilController;
 use App\BackOffice\Controllers\PointFraicheurController;
-use App\BackOffice\Controllers\QuartierController;
+use App\BackOffice\Controllers\PlanUrgenceController;
+use App\BackOffice\Controllers\PlanAiController;
+use App\BackOffice\Controllers\EtapePlanController;
 use App\BackOffice\Controllers\SignalementController;
 use App\BackOffice\Controllers\TypePointController;
 use App\BackOffice\Controllers\TypeSignalementController;
 use App\BackOffice\Controllers\UserController;
-use App\BackOffice\Controllers\PlanUrgenceController;
-use App\BackOffice\Controllers\PlanAiController;
-use App\BackOffice\Controllers\EtapePlanController;
+use App\Http\Controllers\Back\CoupureController;
+use App\Http\Controllers\Back\ImpactCoupureController;
+use App\Http\Controllers\Back\InterventionController;
+use App\Http\Controllers\Back\QuartierController;
+use App\Http\Controllers\Back\SmartGridController;
 use App\Http\Controllers\Back\AlerteController;
 use App\Http\Controllers\Back\AlerteAiController;
 use App\Http\Controllers\Back\BulletinAlerteController;
@@ -91,6 +94,17 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::post('notifications/{id}/mark-as-read', [CoupureController::class, 'markNotificationAsRead'])
         ->name('notifications.mark-as-read');
     Route::resource('coupures', CoupureController::class);
+    Route::resource('interventions', InterventionController::class);
+    Route::resource('impacts-coupures', ImpactCoupureController::class)
+        ->parameters(['impacts-coupures' => 'impactCoupure']);
+    Route::get('/smartgrid', [SmartGridController::class, 'index'])->name('smartgrid.index');
+    Route::get('/smartgrid/data', [SmartGridController::class, 'data'])->name('smartgrid.data');
+    Route::post('/smartgrid/route', [SmartGridController::class, 'route'])
+        ->middleware('throttle:5,1')->name('smartgrid.route');
+    Route::post('/smartgrid/analyze-zone', [SmartGridController::class, 'analyzeZone'])
+        ->middleware('throttle:3,1')->name('smartgrid.analyze-zone');
+    Route::post('/smartgrid/analyze/{coupure}', [SmartGridController::class, 'analyze'])
+        ->middleware('throttle:3,1')->name('smartgrid.analyze');
 
     // Module « Alertes » : cycle de vie d'une alerte (parent Alerte, enfant BulletinAlerte).
     Route::post('bulletins-alerte/ia/generer', [AlerteAiController::class, 'generateBulletin'])

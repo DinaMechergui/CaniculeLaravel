@@ -17,7 +17,7 @@
         <div class="card mb-4 border border-primary shadow-sm">
             <div class="card-header bg-label-primary py-2 d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <h6 class="mb-0 text-primary fw-bold">
-                    <i class="bx bx-bulb me-1"></i> Prédiction du temps de fin de coupure (IA & Réseau STEG)
+                    <i class="bx bx-bulb me-1"></i> Prédiction du temps de fin de coupure
                 </h6>
                 <span class="badge bg-primary">{{ $prediction['confiance'] }}</span>
             </div>
@@ -47,9 +47,7 @@
     @endif
 
     <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0">Informations de la coupure</h5>
-        </div>
+        <div class="card-header"><h5 class="mb-0">Informations de la coupure</h5></div>
         <div class="card-body">
             <div class="row mb-3">
                 <div class="col-sm-3 text-muted">Quartier</div>
@@ -60,44 +58,85 @@
                 </div>
             </div>
             <div class="row mb-3">
-                <div class="col-sm-3 text-muted">Type d'incident</div>
+                <div class="col-sm-3 text-muted">Type</div>
                 <div class="col-sm-9">
-                    @php
-                        $typeBadge = match($coupure->type) {
-                            'delestage' => 'badge bg-label-warning',
-                            'panne' => 'badge bg-label-danger',
-                            'surcharge' => 'badge bg-label-info',
-                            default => 'badge bg-label-secondary',
-                        };
-                    @endphp
-                    <span class="{{ $typeBadge }} fs-6">{{ ucfirst($coupure->type) }}</span>
+                    <span class="badge {{ ['delestage' => 'bg-label-warning', 'panne' => 'bg-label-danger', 'surcharge' => 'bg-label-info'][$coupure->type] ?? 'bg-label-secondary' }}">
+                        {{ ucfirst($coupure->type) }}
+                    </span>
                 </div>
             </div>
             <div class="row mb-3">
-                <div class="col-sm-3 text-muted">Statut actuel</div>
+                <div class="col-sm-3 text-muted">Statut</div>
                 <div class="col-sm-9">
-                    <span class="badge {{ ['en_cours' => 'bg-danger', 'prevue' => 'bg-warning text-dark', 'terminee' => 'bg-success'][$coupure->statut] }} fs-6">
+                    <span class="badge {{ ['en_cours' => 'bg-danger', 'prevue' => 'bg-warning text-dark', 'terminee' => 'bg-success'][$coupure->statut] ?? 'bg-secondary' }}">
                         {{ str_replace('_', ' ', ucfirst($coupure->statut)) }}
                     </span>
                 </div>
             </div>
             <div class="row mb-3">
-                <div class="col-sm-3 text-muted">Date et heure de début</div>
+                <div class="col-sm-3 text-muted">Début</div>
                 <div class="col-sm-9">{{ $coupure->date_debut->format('d/m/Y H:i') }}</div>
             </div>
             <div class="row mb-3">
-                <div class="col-sm-3 text-muted">Date et heure de fin confirmée</div>
+                <div class="col-sm-3 text-muted">Fin confirmée</div>
+                <div class="col-sm-9">{{ $coupure->date_fin?->format('d/m/Y H:i') ?? 'Non renseignée' }}</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-sm-3 text-muted">Position</div>
                 <div class="col-sm-9">
-                    @if ($coupure->date_fin)
-                        <span class="text-success fw-semibold">{{ $coupure->date_fin->format('d/m/Y H:i') }}</span>
+                    @if ($coupure->latitude !== null && $coupure->longitude !== null)
+                        {{ $coupure->latitude }}, {{ $coupure->longitude }}
                     @else
-                        <span class="text-muted font-italic">En attente de rétablissement (voir estimation IA ci-dessus)</span>
+                        <span class="text-muted">Position non renseignée</span>
                     @endif
                 </div>
             </div>
             <div class="row">
                 <div class="col-sm-3 text-muted">Description</div>
                 <div class="col-sm-9">{{ $coupure->description ?? 'Aucune description spécifique renseignée.' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-1">
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header"><h5 class="mb-0">Interventions ({{ $coupure->interventions->count() }})</h5></div>
+                <div class="card-body">
+                    @forelse ($coupure->interventions as $intervention)
+                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                            <div>
+                                <a href="{{ route('admin.interventions.show', $intervention) }}">{{ $intervention->equipe }}</a>
+                                <div class="small text-muted">{{ $intervention->date_intervention->format('d/m/Y H:i') }}</div>
+                            </div>
+                            <span class="badge {{ ['prevue' => 'bg-warning text-dark', 'en_cours' => 'bg-primary', 'terminee' => 'bg-success'][$intervention->statut] ?? 'bg-secondary' }}">
+                                {{ str_replace('_', ' ', ucfirst($intervention->statut)) }}
+                            </span>
+                        </div>
+                    @empty
+                        <p class="text-muted mb-0">Aucune intervention rattachée.</p>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header"><h5 class="mb-0">Impacts ({{ $coupure->impacts->count() }})</h5></div>
+                <div class="card-body">
+                    @forelse ($coupure->impacts as $impact)
+                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                            <div>
+                                <a href="{{ route('admin.impacts-coupures.show', $impact) }}">{{ $impact->nom_structure }}</a>
+                                <div class="small text-muted">{{ number_format($impact->personnes_affectees, 0, ',', ' ') }} personne(s) affectée(s)</div>
+                            </div>
+                            <span class="badge {{ ['moyen' => 'bg-info', 'eleve' => 'bg-warning text-dark', 'critique' => 'bg-danger'][$impact->niveau_gravite] ?? 'bg-secondary' }}">
+                                {{ ucfirst($impact->niveau_gravite) }}
+                            </span>
+                        </div>
+                    @empty
+                        <p class="text-muted mb-0">Aucun impact rattaché.</p>
+                    @endforelse
+                </div>
             </div>
         </div>
     </div>
