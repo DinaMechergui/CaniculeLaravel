@@ -101,11 +101,18 @@
 
     {{-- Contenu du message court --}}
     <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-1">
+        <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2">
             <label for="contenu" class="form-label fw-semibold mb-0">
                 Message court transmis à la population <span class="text-danger">*</span>
             </label>
-            <span class="badge bg-label-secondary" id="char-counter">0 / 160 caractères</span>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 d-flex align-items-center" id="btn-ai-adapt-diffusion">
+                    <span id="btn-diff-spinner" class="spinner-border spinner-border-sm me-1 d-none" role="status"></span>
+                    <i class="bx bx-bot me-1" id="btn-diff-icon"></i>
+                    <span id="btn-diff-text">⚡ Adapter au canal via l'IA</span>
+                </button>
+                <span class="badge bg-label-secondary" id="char-counter">0 / 160 caractères</span>
+            </div>
         </div>
         <textarea name="contenu"
                   id="contenu"
@@ -114,7 +121,10 @@
                   class="form-control @error('contenu') is-invalid @enderror"
                   placeholder="Ex : [ALERTE INM] Vigilance Rouge canicule à Kairouan. Évitez les sorties de 11h à 17h. Hydratez-vous. Urgences : 198."
                   required>{{ old('contenu', $diffusion->contenu ?? '') }}</textarea>
-        <div class="form-text">Format adapté pour les SMS, bandeaux d'affichage et notifications push (160 caractères max).</div>
+        <div class="d-flex justify-content-between align-items-center mt-1">
+            <div class="form-text">Format adapté pour les SMS, bandeaux d'affichage et notifications push (160 caractères max).</div>
+            <div id="ai-diff-feedback" class="small fw-semibold text-primary" style="display:none;"></div>
+        </div>
         @error('contenu')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -134,6 +144,12 @@
     document.addEventListener('DOMContentLoaded', function () {
         const textarea = document.getElementById('contenu');
         const counter = document.getElementById('char-counter');
+        const btnAi = document.getElementById('btn-ai-adapt-diffusion');
+        const spinner = document.getElementById('btn-diff-spinner');
+        const icon = document.getElementById('btn-diff-icon');
+        const text = document.getElementById('btn-diff-text');
+        const feedback = document.getElementById('ai-diff-feedback');
+
         function updateCount() {
             const length = textarea.value.length;
             counter.textContent = length + ' / 160 caractères';
@@ -145,9 +161,82 @@
                 counter.className = 'badge bg-label-secondary';
             }
         }
+
         if (textarea && counter) {
             textarea.addEventListener('input', updateCount);
             updateCount();
+        }
+
+        if (btnAi) {
+            btnAi.addEventListener('click', async function () {
+                const bulletinSelect = document.getElementById('bulletin_alerte_id');
+                const canalSelect = document.getElementById('canal');
+                const bulletinId = bulletinSelect ? bulletinSelect.value : '';
+                const canal = canalSelect ? canalSelect.value : '';
+
+                if (!bulletinId) {
+                    alert('Veuillez d\'abord sélectionner le bulletin d\'alerte à diffuser ci-dessus.');
+                    bulletinSelect.focus();
+                    return;
+                }
+
+                if (!canal) {
+                    alert('Veuillez sélectionner un canal de transmission ci-dessus.');
+                    canalSelect.focus();
+                    return;
+                }
+
+                btnAi.disabled = true;
+                spinner.classList.remove('d-none');
+                icon.classList.add('d-none');
+                text.textContent = 'Adaptation IA...';
+                feedback.style.display = 'none';
+
+                try {
+                    const response = await fetch("{{ route('admin.diffusions.ia.adapter') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            bulletin_alerte_id: bulletinId,
+                            canal: canal
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok || !data.success) {
+                        throw new Error(data.message || 'Erreur lors de l\'adaptation IA.');
+                    }
+
+                    if (textarea && data.contenu) {
+                        textarea.value = data.contenu;
+                        updateCount();
+                        textarea.style.transition = 'background-color 0.4s';
+                        textarea.style.backgroundColor = '#e8f4fd';
+                        setTimeout(() => textarea.style.backgroundColor = '', 1500);
+                    }
+
+                    const destinatairesInput = document.getElementById('destinataires_estimes');
+                    if (destinatairesInput && data.destinataires_estimes) {
+                        destinatairesInput.value = data.destinataires_estimes;
+                    }
+
+                    feedback.innerHTML = '✨ Adapté pour ' + (data.canal_label || canal) + ' (' + (data.provider || 'IA') + ')';
+                    feedback.style.display = 'block';
+
+                } catch (err) {
+                    alert('Erreur : ' + err.message);
+                } finally {
+                    btnAi.disabled = false;
+                    spinner.classList.add('d-none');
+                    icon.classList.remove('d-none');
+                    text.textContent = '⚡ Adapter au canal via l\'IA';
+                }
+            });
         }
     });
 </script>

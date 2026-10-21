@@ -27,6 +27,44 @@
     </div>
 </div>
 
+{{-- Assistant Rédactionnel IA (Option 1) --}}
+<div class="card border border-primary border-opacity-25 bg-primary bg-opacity-10 mb-4 shadow-sm" id="ai-bulletin-card">
+    <div class="card-body p-3">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-primary text-white p-2 rounded-circle">
+                    <i class="bx bx-bot fs-5"></i>
+                </span>
+                <div>
+                    <h6 class="mb-0 fw-bold text-primary">Assistant Rédactionnel Météo IA</h6>
+                    <small class="text-muted">Générez automatiquement le niveau de vigilance, l'évolution, le diagnostic et la conduite à tenir</small>
+                </div>
+            </div>
+            <span class="badge bg-white text-primary border shadow-xs" id="ai-provider-badge" style="display:none;"></span>
+        </div>
+
+        <div class="row g-2 align-items-center mt-1">
+            <div class="col-md-9">
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bx bx-message-rounded-dots text-primary"></i></span>
+                    <input type="text"
+                           id="ai-keywords"
+                           class="form-control bg-white"
+                           placeholder="Mots-clés ou contexte (ex: Grand Tunis, 45°C, sirocco violent, risque incendie... ou laissez vide pour suggestion automatique)" />
+                </div>
+            </div>
+            <div class="col-md-3 d-grid">
+                <button type="button" class="btn btn-primary" id="btn-ai-generate-bulletin">
+                    <span id="btn-ai-spinner" class="spinner-border spinner-border-sm me-1 d-none" role="status"></span>
+                    <i class="bx bx-sparkles me-1" id="btn-ai-icon"></i>
+                    <span id="btn-ai-text">Rédiger avec l'IA</span>
+                </button>
+            </div>
+        </div>
+        <div id="ai-feedback" class="small mt-2" style="display:none;"></div>
+    </div>
+</div>
+
 <div class="row g-3">
     {{-- Alerte parente --}}
     <div class="col-md-6">
@@ -147,3 +185,99 @@
         <i class="bx bx-save me-1"></i> {{ $isEdit ? 'Mettre à jour le bulletin' : 'Publier le bulletin' }}
     </button>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const btnAi = document.getElementById('btn-ai-generate-bulletin');
+        const spinner = document.getElementById('btn-ai-spinner');
+        const icon = document.getElementById('btn-ai-icon');
+        const text = document.getElementById('btn-ai-text');
+        const feedback = document.getElementById('ai-feedback');
+        const badge = document.getElementById('ai-provider-badge');
+
+        if (!btnAi) return;
+
+        btnAi.addEventListener('click', async function () {
+            const alerteSelect = document.getElementById('alerte_id');
+            const alerteId = alerteSelect ? alerteSelect.value : '';
+            const keywords = document.getElementById('ai-keywords').value;
+
+            if (!alerteId) {
+                alert('Veuillez d\'abord sélectionner une alerte concernée ci-dessous.');
+                alerteSelect.focus();
+                return;
+            }
+
+            // UI Loading
+            btnAi.disabled = true;
+            spinner.classList.remove('d-none');
+            icon.classList.add('d-none');
+            text.textContent = 'Génération IA...';
+            feedback.style.display = 'none';
+
+            try {
+                const response = await fetch("{{ route('admin.bulletins-alerte.ia.generer') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        alerte_id: alerteId,
+                        keywords: keywords
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Erreur lors de la génération IA.');
+                }
+
+                // Pré-remplissage des champs
+                const niveauSelect = document.getElementById('niveau');
+                const evolutionSelect = document.getElementById('evolution');
+                const tempInput = document.getElementById('temperature_max');
+                const messageTextarea = document.getElementById('message');
+                const conduiteTextarea = document.getElementById('conduite_a_tenir');
+
+                if (niveauSelect && data.niveau) niveauSelect.value = data.niveau;
+                if (evolutionSelect && data.evolution) evolutionSelect.value = data.evolution;
+                if (tempInput && data.temperature_max) tempInput.value = data.temperature_max;
+                if (messageTextarea && data.message) messageTextarea.value = data.message;
+                if (conduiteTextarea && data.conduite_a_tenir) conduiteTextarea.value = data.conduite_a_tenir;
+
+                // Affichage du provider
+                if (badge && data.provider) {
+                    badge.textContent = '✨ ' + data.provider;
+                    badge.style.display = 'inline-block';
+                }
+
+                // Message de succès
+                feedback.className = 'small mt-2 alert alert-success py-1 px-2 d-flex align-items-center';
+                feedback.innerHTML = '<i class="bx bx-check-circle me-1"></i> Bulletin généré avec succès par l\'IA ! Vous pouvez ajuster les champs avant de publier.';
+                feedback.style.display = 'flex';
+
+                // Effet visuel sur les champs remplis
+                [niveauSelect, evolutionSelect, messageTextarea, conduiteTextarea].forEach(el => {
+                    if (el) {
+                        el.style.transition = 'background-color 0.4s';
+                        el.style.backgroundColor = '#e8f4fd';
+                        setTimeout(() => el.style.backgroundColor = '', 1500);
+                    }
+                });
+
+            } catch (err) {
+                feedback.className = 'small mt-2 alert alert-danger py-1 px-2 d-flex align-items-center';
+                feedback.innerHTML = '<i class="bx bx-error me-1"></i> ' + err.message;
+                feedback.style.display = 'flex';
+            } finally {
+                btnAi.disabled = false;
+                spinner.classList.add('d-none');
+                icon.classList.remove('d-none');
+                text.textContent = 'Rédiger avec l\'IA';
+            }
+        });
+    });
+</script>

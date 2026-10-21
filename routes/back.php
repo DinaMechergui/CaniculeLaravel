@@ -29,6 +29,7 @@ use App\BackOffice\Controllers\PlanUrgenceController;
 use App\BackOffice\Controllers\PlanAiController;
 use App\BackOffice\Controllers\EtapePlanController;
 use App\Http\Controllers\Back\AlerteController;
+use App\Http\Controllers\Back\AlerteAiController;
 use App\Http\Controllers\Back\BulletinAlerteController;
 use App\Http\Controllers\Back\DiffusionController;
 use App\Http\Controllers\Back\ReservationController;
@@ -92,11 +93,17 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::resource('coupures', CoupureController::class);
 
     // Module « Alertes » : cycle de vie d'une alerte (parent Alerte, enfant BulletinAlerte).
+    Route::post('bulletins-alerte/ia/generer', [AlerteAiController::class, 'generateBulletin'])
+        ->name('bulletins-alerte.ia.generer')
+        ->middleware('throttle:20,1');
     Route::resource('alertes', AlerteController::class);
     Route::resource('bulletins-alerte', BulletinAlerteController::class)
         ->parameters(['bulletins-alerte' => 'bulletinAlerte']);
 
     // Module complémentaire « Diffusions des bulletins » (lié à BulletinAlerte).
+    Route::post('diffusions/ia/adapter', [AlerteAiController::class, 'adaptDiffusion'])
+        ->name('diffusions.ia.adapter')
+        ->middleware('throttle:20,1');
     Route::resource('diffusions', DiffusionController::class);
 
     // Module « Conseils » : les catégories (parent).
