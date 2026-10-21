@@ -260,14 +260,22 @@ class SmartGridTest extends TestCase
         config(['services.gemini.api_key' => 'test-secret-key', 'services.gemini.model' => 'gemini-test']);
         Http::fake([
             'generativelanguage.googleapis.com/*' => Http::response([
-                'candidates' => [['content' => ['parts' => [['text' => json_encode([
-                    'resume' => 'Analyse de test',
-                    'facteurs_risque' => [],
-                    'priorite_recommandee' => 'elevee',
-                    'justification' => 'Test',
-                    'actions_suggerees' => [],
-                    'incertitudes' => [],
-                ])]]]],
+                'candidates' => [
+                    [
+                        'content' => [
+                            'parts' => [
+                                ['text' => json_encode([
+                                    'resume' => 'Analyse de test',
+                                    'facteurs_risque' => [],
+                                    'priorite_recommandee' => 'elevee',
+                                    'justification' => 'Test',
+                                    'actions_suggerees' => [],
+                                    'incertitudes' => [],
+                                ])],
+                            ],
+                        ],
+                    ],
+                ],
             ], 200),
         ]);
 
