@@ -21,7 +21,7 @@
                     <a href="{{ route('register') }}" class="ve-btn-primary">Créer un compte</a>
                     <a href="{{ route('login') }}" class="ve-btn-ghost">Se connecter</a>
                 @else
-                    <a href="{{ route('alertes-meteo.index') }}" class="ve-btn-primary">Consulter les alertes</a>
+                    <a href="{{ route('alertes.index') }}" class="ve-btn-primary">Consulter les alertes</a>
                     @if (auth()->user()->isAdmin())
                         <a href="{{ route('admin.dashboard') }}" class="ve-btn-ghost">Back office</a>
                     @endif

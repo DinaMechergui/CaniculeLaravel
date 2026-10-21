@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\NiveauAlerte;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -271,14 +270,20 @@ class AlerteAiService
             $couleur = 'jaune';
         }
 
-        $niveauModel = NiveauAlerte::where('couleur', $couleur)->first();
+        $libelle = match ($couleur) {
+            'vert' => 'Vigilance verte',
+            'jaune' => 'Vigilance jaune',
+            'orange' => 'Vigilance orange',
+            'rouge' => 'Vigilance rouge (danger maximal)',
+            default => ucfirst($couleur),
+        };
 
         return [
             'success' => true,
             'titre' => mb_substr($data['titre'] ?? 'Alerte Météorologique', 0, 150),
             'couleur' => $couleur,
-            'niveau_id' => $niveauModel?->id ?? 2,
-            'niveau_libelle' => $niveauModel?->libelle ?? ucfirst($couleur),
+            'niveau' => $couleur,
+            'niveau_libelle' => $libelle,
             'message' => $data['message'] ?? '',
             'source' => $data['source'] ?? 'Institut National de la Météorologie (INM)',
             'provider' => $provider,

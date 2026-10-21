@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\AlerteMeteo;
+use App\Models\Alerte;
 use App\Models\EtapePlan;
 use App\Models\PlanUrgence;
 use App\Models\ProfilFoyer;
@@ -47,7 +47,7 @@ class PlanUrgenceService
     public function recommandes(?User $user, Collection $plans): Collection
     {
         $profil = $user?->profilFoyer;
-        $alerte = AlerteMeteo::active()->exists();
+        $alerte = Alerte::enCours()->exists();
         return $plans->map(function (PlanUrgence $plan) use ($profil, $alerte) {
             $score = $plan->public_cible === 'tous' ? 1 : 0;
             if ($profil) {

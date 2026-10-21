@@ -18,7 +18,7 @@ use App\FrontOffice\Controllers\CampagneConseilController;
 use App\FrontOffice\Controllers\PointFraicheurController;
 use App\FrontOffice\Controllers\ProfileController;
 use App\FrontOffice\Controllers\SignalementController;
-use App\Http\Controllers\Front\AlerteMeteoController as FrontAlerteMeteoController;
+use App\Http\Controllers\Front\AlerteController as FrontAlerteController;
 use App\Http\Controllers\Front\ReservationController as FrontReservationController;
 use Illuminate\Support\Facades\Route;
 use App\FrontOffice\Controllers\ConseilController;
@@ -106,10 +106,14 @@ Route::middleware('auth')->group(function () {
 Route::get('/coupures', [CoupureController::class, 'index'])->name('coupures.index');
 Route::get('/coupures/{coupure}', [CoupureController::class, 'show'])->name('coupures.show');
 
-// Module « Alertes météo » : pages publiques.
-Route::get('/alertes-meteo', [FrontAlerteMeteoController::class, 'index'])
+// Module « Alertes » : pages publiques.
+Route::get('/alertes', [FrontAlerteController::class, 'index'])
+    ->name('alertes.index');
+Route::get('/alertes/{id}', [FrontAlerteController::class, 'show'])
+    ->name('alertes.show');
+Route::get('/alertes-meteo', fn () => redirect()->route('alertes.index'))
     ->name('alertes-meteo.index');
-Route::get('/alertes-meteo/{id}', [FrontAlerteMeteoController::class, 'show'])
+Route::get('/alertes-meteo/{id}', fn ($id) => redirect()->route('alertes.show', $id))
     ->name('alertes-meteo.show');
 
 // Module « Signalements » : pages publiques.

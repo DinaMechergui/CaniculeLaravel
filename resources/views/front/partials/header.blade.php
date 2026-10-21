@@ -29,7 +29,7 @@
                     <a href="{{ route('coupures.index') }}" class="{{ request()->routeIs('coupures.index', 'coupures.show') ? 'active' : '' }}">Coupures</a>
                 </li>
                 <li>
-                    <a href="{{ route('alertes-meteo.index') }}" class="{{ request()->routeIs('alertes-meteo.*') ? 'active' : '' }}">Alertes météo</a>
+                    <a href="{{ route('alertes.index') }}" class="{{ request()->routeIs('alertes.*') ? 'active' : '' }}">Alertes</a>
                 </li>
                 <li>
                     <a href="{{ route('conseils.index') }}" class="{{ request()->routeIs('conseils.index', 'conseils.show') ? 'active' : '' }}">Conseils</a>
@@ -108,7 +108,7 @@
                 <a href="{{ route('coupures.index') }}" class="{{ request()->routeIs('coupures.index', 'coupures.show') ? 'active' : '' }}">Coupures</a>
             </li>
             <li>
-                <a href="{{ route('alertes-meteo.index') }}" class="{{ request()->routeIs('alertes-meteo.*') ? 'active' : '' }}">Alertes météo</a>
+                <a href="{{ route('alertes.index') }}" class="{{ request()->routeIs('alertes.*') ? 'active' : '' }}">Alertes</a>
             </li>
             <li>
                 <a href="{{ route('conseils.index') }}" class="{{ request()->routeIs('conseils.index', 'conseils.show') ? 'active' : '' }}">Conseils</a>

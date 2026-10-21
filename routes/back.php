@@ -28,9 +28,9 @@ use App\BackOffice\Controllers\UserController;
 use App\BackOffice\Controllers\PlanUrgenceController;
 use App\BackOffice\Controllers\PlanAiController;
 use App\BackOffice\Controllers\EtapePlanController;
-use App\Http\Controllers\Back\AlerteMeteoController as BackAlerteMeteoController;
-use App\Http\Controllers\Back\MesurePreventionController;
-use App\Http\Controllers\Back\NiveauAlerteController;
+use App\Http\Controllers\Back\AlerteController;
+use App\Http\Controllers\Back\BulletinAlerteController;
+use App\Http\Controllers\Back\DiffusionController;
 use App\Http\Controllers\Back\ReservationController;
 use Illuminate\Support\Facades\Route;
 
@@ -91,19 +91,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         ->name('notifications.mark-as-read');
     Route::resource('coupures', CoupureController::class);
 
-    // Module « Alertes météo » : les niveaux d'alerte (parent).
-    Route::resource('niveaux-alerte', NiveauAlerteController::class)
-        ->parameters(['niveaux-alerte' => 'niveau_alerte']);
+    // Module « Alertes » : cycle de vie d'une alerte (parent Alerte, enfant BulletinAlerte).
+    Route::resource('alertes', AlerteController::class);
+    Route::resource('bulletins-alerte', BulletinAlerteController::class)
+        ->parameters(['bulletins-alerte' => 'bulletinAlerte']);
 
-    // Module « Alertes météo » : les alertes météo (enfant).
-    Route::post('alertes-meteo/ai-generate', [BackAlerteMeteoController::class, 'aiGenerate'])
-        ->name('alertes-meteo.ai-generate');
-    Route::resource('alertes-meteo', BackAlerteMeteoController::class)
-        ->parameters(['alertes-meteo' => 'alerte_meteo']);
-
-    // Module « Mesures de prévention » (lié aux alertes météo).
-    Route::resource('mesures-prevention', MesurePreventionController::class)
-        ->parameters(['mesures-prevention' => 'mesure_prevention']);
+    // Module complémentaire « Diffusions des bulletins » (lié à BulletinAlerte).
+    Route::resource('diffusions', DiffusionController::class);
 
     // Module « Conseils » : les catégories (parent).
     Route::resource('categories-conseil', CategorieConseilController::class)

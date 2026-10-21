@@ -1,6 +1,6 @@
 <?php
 namespace App\Console\Commands;
-use App\Models\AlerteMeteo;
+use App\Models\Alerte;
 use App\Models\PlanUrgence;
 use App\Models\User;
 use App\Notifications\RappelPlanIncomplet;
@@ -8,10 +8,10 @@ use Illuminate\Console\Command;
 class RappelerPlansIncomplets extends Command
 {
     protected $signature = 'plans:rappeler-incomplets {--dry-run : Affiche les rappels sans les envoyer}';
-    protected $description = 'Rappelle les étapes obligatoires pendant une alerte météo active.';
+    protected $description = 'Rappelle les étapes obligatoires pendant une alerte active.';
     public function handle(): int
     {
-        if (! AlerteMeteo::active()->exists()) { $this->info('Aucune alerte météo active.'); return self::SUCCESS; }
+        if (! Alerte::enCours()->exists()) { $this->info('Aucune alerte active.'); return self::SUCCESS; }
         $nombre=0;
         PlanUrgence::with('etapes')->where('actif',true)->chunkById(100,function($plans) use (&$nombre) {
             foreach($plans as $plan) {

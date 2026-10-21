@@ -80,26 +80,26 @@
             </a>
         </li>
 
-        {{-- Module « Alertes météo » --}}
+        {{-- Module « Alertes » --}}
         <li class="menu-header small text-uppercase">
-            <span class="menu-header-text">Alertes météo</span>
+            <span class="menu-header-text">Gestion des alertes</span>
         </li>
-        <li class="menu-item {{ request()->routeIs('admin.niveaux-alerte.*') ? 'active' : '' }}">
-            <a href="{{ route('admin.niveaux-alerte.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-signal-5"></i>
-                <div data-i18n="Niveaux d'alerte">Niveaux d'alerte</div>
+        <li class="menu-item {{ request()->routeIs('admin.alertes.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.alertes.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-bell"></i>
+                <div data-i18n="Alertes">Alertes</div>
             </a>
         </li>
-        <li class="menu-item {{ request()->routeIs('admin.alertes-meteo.*') ? 'active' : '' }}">
-            <a href="{{ route('admin.alertes-meteo.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-cloud-rain"></i>
-                <div data-i18n="Alertes météo">Alertes météo</div>
+        <li class="menu-item {{ request()->routeIs('admin.bulletins-alerte.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.bulletins-alerte.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-file"></i>
+                <div data-i18n="Bulletins de suivi">Bulletins de suivi</div>
             </a>
         </li>
-        <li class="menu-item {{ request()->routeIs('admin.mesures-prevention.*') ? 'active' : '' }}">
-            <a href="{{ route('admin.mesures-prevention.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-shield-quarter"></i>
-                <div data-i18n="Mesures de prévention">Mesures de prévention</div>
+        <li class="menu-item {{ request()->routeIs('admin.diffusions.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.diffusions.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-broadcast"></i>
+                <div data-i18n="Diffusions">Diffusions</div>
             </a>
         </li>
 
