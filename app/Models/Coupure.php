@@ -51,4 +51,21 @@ class Coupure extends Model
     {
         return $this->hasMany(ImpactCoupure::class, 'coupure_id');
     }
+
+    /** @return array<string, mixed> */
+    public function toMapSummary(): array
+    {
+        return [
+            'id' => $this->id,
+            'latitude' => $this->latitude === null ? null : (float) $this->latitude,
+            'longitude' => $this->longitude === null ? null : (float) $this->longitude,
+            'quartier' => $this->quartier?->nom,
+            'ville' => $this->quartier?->ville,
+            'type' => $this->type,
+            'statut' => $this->statut,
+            'date_debut' => $this->date_debut->format('d/m/Y H:i'),
+            'date_fin' => $this->date_fin?->format('d/m/Y H:i'),
+            'personnes_affectees' => (int) $this->impacts->sum('personnes_affectees'),
+        ];
+    }
 }

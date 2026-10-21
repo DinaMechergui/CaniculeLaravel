@@ -2,11 +2,14 @@
 
 namespace App\BackOffice\Requests;
 
+use App\BackOffice\Requests\Concerns\HasCoordinatesValidation;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreImpactCoupureRequest extends FormRequest
 {
+    use HasCoordinatesValidation;
+
     public function authorize(): bool
     {
         return true;
@@ -15,7 +18,7 @@ class StoreImpactCoupureRequest extends FormRequest
     /** @return array<string, ValidationRule|array<mixed>|string> */
     public function rules(): array
     {
-        return [
+        return array_merge([
             'coupure_id' => ['required', 'integer', 'exists:coupures,id'],
             'nom_structure' => ['required', 'string', 'max:150'],
             'categorie' => ['required', 'in:hopital,ecole,commerce,residence,autre'],
@@ -26,14 +29,12 @@ class StoreImpactCoupureRequest extends FormRequest
             'mesures_urgence' => ['nullable', 'string'],
             'statut' => ['required', 'in:en_traitement,resolu'],
             'description' => ['nullable', 'string'],
-            'latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
-            'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
-        ];
+        ], $this->coordinateRules());
     }
 
     public function messages(): array
     {
-        return [
+        return array_merge([
             'coupure_id.required' => 'Veuillez sélectionner une coupure.',
             'coupure_id.exists' => 'La coupure sélectionnée n’existe pas.',
             'nom_structure.required' => 'Le nom de la structure est obligatoire.',
@@ -51,20 +52,11 @@ class StoreImpactCoupureRequest extends FormRequest
             'date_signalement.date' => 'La date du signalement est invalide.',
             'statut.required' => 'Le statut de l’impact est obligatoire.',
             'statut.in' => 'Le statut sélectionné est invalide.',
-            'latitude.numeric' => 'La latitude doit être numérique.',
-            'latitude.between' => 'La latitude doit être comprise entre -90 et 90.',
-            'latitude.required_with' => 'La latitude est obligatoire si la longitude est renseignée.',
-            'longitude.numeric' => 'La longitude doit être numérique.',
-            'longitude.between' => 'La longitude doit être comprise entre -180 et 180.',
-            'longitude.required_with' => 'La longitude est obligatoire si la latitude est renseignée.',
-        ];
+        ], $this->coordinateMessages());
     }
 
     protected function prepareForValidation(): void
     {
-        $this->merge([
-            'latitude' => $this->filled('latitude') ? $this->input('latitude') : null,
-            'longitude' => $this->filled('longitude') ? $this->input('longitude') : null,
-        ]);
+        $this->prepareCoordinatesForValidation();
     }
 }

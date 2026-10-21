@@ -52,25 +52,18 @@ class CoupureController extends Controller
             ])->values();
 
         return response()->json([
-            'coupures' => $coupures->map(fn (Coupure $coupure) => [
-                'id' => $coupure->id,
-                'latitude' => $coupure->latitude === null ? null : (float) $coupure->latitude,
-                'longitude' => $coupure->longitude === null ? null : (float) $coupure->longitude,
-                'quartier' => $coupure->quartier?->nom,
-                'ville' => $coupure->quartier?->ville,
-                'type' => $coupure->type,
-                'statut' => $coupure->statut,
-                'date_debut' => $coupure->date_debut->format('d/m/Y H:i'),
-                'date_fin' => $coupure->date_fin?->format('d/m/Y H:i'),
-                'personnes_affectees' => (int) $coupure->impacts->sum('personnes_affectees'),
-                'interventions_count' => $coupure->interventions->count(),
-                'interventions' => $coupure->interventions->sortByDesc('date_intervention')->values()->map(fn ($intervention) => [
-                    'equipe' => $intervention->equipe,
-                    'date' => $intervention->date_intervention->format('d/m/Y H:i'),
-                    'statut' => $intervention->statut,
-                ]),
-                'detail_url' => route('coupures.show', $coupure),
-            ])->values(),
+            'coupures' => $coupures->map(fn (Coupure $coupure) => array_merge(
+                $coupure->toMapSummary(),
+                [
+                    'interventions_count' => $coupure->interventions->count(),
+                    'interventions' => $coupure->interventions->sortByDesc('date_intervention')->values()->map(fn ($intervention) => [
+                        'equipe' => $intervention->equipe,
+                        'date' => $intervention->date_intervention->format('d/m/Y H:i'),
+                        'statut' => $intervention->statut,
+                    ]),
+                    'detail_url' => route('coupures.show', $coupure),
+                ]
+            ))->values(),
             'impacts' => $impacts,
         ]);
     }

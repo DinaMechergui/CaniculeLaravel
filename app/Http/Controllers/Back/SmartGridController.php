@@ -50,29 +50,22 @@ class SmartGridController extends Controller
         $cutFeatures = $coupures->map(function (Coupure $coupure): array {
             $priority = $this->priorityService->score($coupure);
 
-            return [
-                'id' => $coupure->id,
-                'latitude' => $coupure->latitude === null ? null : (float) $coupure->latitude,
-                'longitude' => $coupure->longitude === null ? null : (float) $coupure->longitude,
-                'quartier' => $coupure->quartier?->nom,
-                'ville' => $coupure->quartier?->ville,
-                'type' => $coupure->type,
-                'statut' => $coupure->statut,
-                'date_debut' => $coupure->date_debut->format('d/m/Y H:i'),
-                'date_fin' => $coupure->date_fin?->format('d/m/Y H:i'),
-                'personnes_affectees' => (int) $coupure->impacts->sum('personnes_affectees'),
-                'impacts_count' => $coupure->impacts->count(),
-                'interventions_count' => $coupure->interventions->count(),
-                'interventions' => $coupure->interventions->sortByDesc('date_intervention')->values()->map(fn ($intervention) => [
-                    'equipe' => $intervention->equipe,
-                    'technicien' => $intervention->technicien,
-                    'date' => $intervention->date_intervention->format('d/m/Y H:i'),
-                    'duree' => $intervention->duree_estimee,
-                    'statut' => $intervention->statut,
-                ]),
-                'priority' => $priority,
-                'detail_url' => route('admin.coupures.show', $coupure),
-            ];
+            return array_merge(
+                $coupure->toMapSummary(),
+                [
+                    'impacts_count' => $coupure->impacts->count(),
+                    'interventions_count' => $coupure->interventions->count(),
+                    'interventions' => $coupure->interventions->sortByDesc('date_intervention')->values()->map(fn ($intervention) => [
+                        'equipe' => $intervention->equipe,
+                        'technicien' => $intervention->technicien,
+                        'date' => $intervention->date_intervention->format('d/m/Y H:i'),
+                        'duree' => $intervention->duree_estimee,
+                        'statut' => $intervention->statut,
+                    ]),
+                    'priority' => $priority,
+                    'detail_url' => route('admin.coupures.show', $coupure),
+                ]
+            );
         })->values();
 
         $impacts = ImpactCoupure::query()
