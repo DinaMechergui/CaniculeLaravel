@@ -10,7 +10,7 @@
             <a href="{{ route('admin.reservations.index') }}" class="btn btn-outline-secondary">
                 <i class="bx bx-arrow-back me-1"></i> Retour à la liste
             </a>
-            <form method="POST" action="{{ route('admin.reservations.analytique.generer') }}" class="d-inline">
+            <form method="POST" action="{{ route('admin.reservations.analytique.generer') }}" class="d-inline" novalidate>
                 @csrf
                 <button type="submit" class="btn btn-primary">
                     <i class="bx bx-refresh me-1"></i> Recalculer

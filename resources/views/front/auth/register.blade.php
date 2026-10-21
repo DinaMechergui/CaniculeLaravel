@@ -16,7 +16,7 @@
                     <h2>Inscription <span>gratuite</span></h2>
                     <p>Vos informations restent strictement confidentielles.</p>
 
-                    <form method="POST" action="{{ route('register') }}" class="ve-contact-form">
+                    <form method="POST" action="{{ route('register') }}" class="ve-contact-form" novalidate>
                         @csrf
 
                         <x-form-input

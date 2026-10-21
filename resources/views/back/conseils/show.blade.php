@@ -40,7 +40,7 @@
 
                     <form method="POST"
                           action="{{ route('admin.conseils.destroy', $conseil) }}"
-                          onsubmit="return confirm('Confirmer la suppression de ce conseil ?');">
+                          onsubmit="return confirm('Confirmer la suppression de ce conseil ?');" novalidate>
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-outline-danger w-100">

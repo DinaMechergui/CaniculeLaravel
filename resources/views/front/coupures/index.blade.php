@@ -5,7 +5,7 @@
     <section class="ve-section"><div class="container">
         <div class="ve-section-header text-center"><span class="ve-section-tag">Coupures de courant</span><h2>Suivre les coupures par quartier</h2><p>{{ $coupures->total() }} coupure(s) prévue(s) ou en cours.</p></div>
         <div class="text-center mb-4"><a href="{{ route('coupures.map') }}" class="ve-btn-primary"><i class="fa fa-map-marker" aria-hidden="true"></i> Voir la carte publique</a></div>
-        <form method="GET" action="{{ route('coupures.index') }}" class="pf-filters mb-4">
+        <form method="GET" action="{{ route('coupures.index') }}" class="pf-filters mb-4" novalidate>
             <div class="pf-filter-field pf-filter-select"><i class="fa fa-map-marker" aria-hidden="true"></i><select name="quartier" aria-label="Filtrer par quartier"><option value="">Tous les quartiers</option>@foreach ($quartiers as $quartier)<option value="{{ $quartier->id }}" @selected((string) $selectedQuartier === (string) $quartier->id)>{{ $quartier->nom }} — {{ $quartier->ville }}</option>@endforeach</select></div>
             <button type="submit" class="ve-btn-primary">Filtrer</button>
             @if ($selectedQuartier)<a href="{{ route('coupures.index') }}" class="pf-reset">Réinitialiser</a>@endif

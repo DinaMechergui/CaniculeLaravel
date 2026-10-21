@@ -1,4 +1,4 @@
-<form method="POST" action="{{ $action }}">
+<form method="POST" action="{{ $action }}" novalidate>
     @csrf
     @if (strtoupper($method) !== 'POST') @method($method) @endif
     <x-form-input name="nom" label="Nom" :value="$quartier->nom" placeholder="Ex. El Menzah" required />

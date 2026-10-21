@@ -7,7 +7,7 @@
         @slot('actions')
             {{-- Bouton Activer (brouillon -> active) --}}
             @if ($campagne->statut === 'brouillon')
-                <form method="POST" action="{{ route('admin.campagnes-conseil.activer', $campagne) }}" class="d-inline">
+                <form method="POST" action="{{ route('admin.campagnes-conseil.activer', $campagne) }}" class="d-inline" novalidate>
                     @csrf
                     <button type="submit" class="btn btn-success"
                             onclick="return confirm('Activer cette campagne ?')">
@@ -18,7 +18,7 @@
 
             {{-- Bouton Terminer (active -> terminee) --}}
             @if ($campagne->statut === 'active')
-                <form method="POST" action="{{ route('admin.campagnes-conseil.terminer', $campagne) }}" class="d-inline">
+                <form method="POST" action="{{ route('admin.campagnes-conseil.terminer', $campagne) }}" class="d-inline" novalidate>
                     @csrf
                     <button type="submit" class="btn btn-secondary"
                             onclick="return confirm('Marquer cette campagne comme terminée ?')">

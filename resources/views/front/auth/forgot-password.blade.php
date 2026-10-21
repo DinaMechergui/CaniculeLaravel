@@ -16,7 +16,7 @@
                     <h2>Réinitialiser <span>le mot de passe</span></h2>
                     <p>Indiquez l'adresse e-mail associée à votre compte.</p>
 
-                    <form method="POST" action="{{ route('password.email') }}" class="ve-contact-form">
+                    <form method="POST" action="{{ route('password.email') }}" class="ve-contact-form" novalidate>
                         @csrf
 
                         <x-form-input

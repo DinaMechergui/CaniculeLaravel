@@ -14,7 +14,7 @@
     {{-- Filtres --}}
     <div class="card mb-4">
         <div class="card-body">
-            <form method="GET" action="{{ route('admin.diagnostics.index') }}" class="d-flex flex-wrap gap-2 align-items-end">
+            <form method="GET" action="{{ route('admin.diagnostics.index') }}" class="d-flex flex-wrap gap-2 align-items-end" novalidate>
                 <div>
                     <label class="form-label" for="zone">Zone touchée</label>
                     <select class="form-select" id="zone" name="zone">
@@ -96,7 +96,7 @@
                                         </a>
                                         <form method="POST"
                                               action="{{ route('admin.diagnostics.destroy', $diagnostic) }}"
-                                              onsubmit="return confirm('Supprimer définitivement ce diagnostic ?');">
+                                              onsubmit="return confirm('Supprimer définitivement ce diagnostic ?');" novalidate>
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">

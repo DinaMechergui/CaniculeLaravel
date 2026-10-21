@@ -14,7 +14,7 @@
     <section class="ve-section"><div class="container">
         <nav class="pf-breadcrumb" aria-label="Fil d’Ariane"><a href="{{ route('front.home') }}">Accueil</a><span>/</span><a href="{{ route('coupures.index') }}">Coupures</a><span>/</span><strong>Carte</strong></nav>
         <div class="ve-section-header text-center"><span class="ve-section-tag">SmartGrid</span><h2>Carte publique des coupures</h2><p>Seules les coupures prévues ou en cours et les positions explicitement enregistrées sont affichées.</p></div>
-        <form id="public-map-filters" class="pf-filters mb-4">
+        <form id="public-map-filters" class="pf-filters mb-4" novalidate>
             <div class="pf-filter-field pf-filter-select"><i class="fa fa-map-marker" aria-hidden="true"></i><select name="quartier_id" aria-label="Filtrer par quartier"><option value="">Tous les quartiers</option>@foreach($quartiers as $quartier)<option value="{{ $quartier->id }}">{{ $quartier->nom }} — {{ $quartier->ville }}</option>@endforeach</select></div>
             <div class="pf-filter-field pf-filter-select"><i class="fa fa-bolt" aria-hidden="true"></i><select name="statut" aria-label="Filtrer par statut"><option value="">Tous les statuts</option><option value="en_cours">En cours</option><option value="prevue">Prévue</option></select></div>
             <button type="submit" class="ve-btn-primary">Filtrer</button>

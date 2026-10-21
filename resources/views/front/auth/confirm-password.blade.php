@@ -16,7 +16,7 @@
                     <h2>Confirmation <span>sécurisée</span></h2>
                     <p>Saisissez votre mot de passe pour continuer.</p>
 
-                    <form method="POST" action="{{ route('password.confirm') }}" class="ve-contact-form">
+                    <form method="POST" action="{{ route('password.confirm') }}" class="ve-contact-form" novalidate>
                         @csrf
 
                         <x-form-input

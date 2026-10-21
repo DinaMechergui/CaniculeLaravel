@@ -6,7 +6,7 @@
 </p>
 
 <form method="POST" action="{{ route('profile.destroy') }}" class="ve-contact-form"
-      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.');">
+      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.');" novalidate>
     @csrf
     @method('DELETE')
 

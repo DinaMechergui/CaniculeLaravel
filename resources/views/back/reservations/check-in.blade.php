@@ -9,7 +9,7 @@
         <div class="col-lg-7">
             <div class="card mb-4">
                 <div class="card-body">
-                    <form method="POST" action="{{ route('admin.reservations.check-in.store') }}" class="row g-2 align-items-end">
+                    <form method="POST" action="{{ route('admin.reservations.check-in.store') }}" class="row g-2 align-items-end" novalidate>
                         @csrf
                         <div class="col-md-8">
                             <label class="form-label" for="code">Code de réservation (8 caractères)</label>
@@ -62,7 +62,7 @@
 
                         @unless ($reservation->check_in_le)
                             <form method="POST"
-                                  action="{{ route('admin.reservations.marquer-check-in', $reservation) }}">
+                                  action="{{ route('admin.reservations.marquer-check-in', $reservation) }}" novalidate>
                                 @csrf
                                 <button type="submit" class="btn btn-success">
                                     <i class="bx bx-check me-1"></i> Valider l'arrivée

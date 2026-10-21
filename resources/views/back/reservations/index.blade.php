@@ -23,7 +23,7 @@
     {{-- Filtres et recherche --}}
     <div class="card mb-4">
         <div class="card-body">
-            <form method="GET" action="{{ route('admin.reservations.index') }}" class="row g-2 align-items-end">
+            <form method="GET" action="{{ route('admin.reservations.index') }}" class="row g-2 align-items-end" novalidate>
                 <div class="col-md-3">
                     <label class="form-label" for="search">Rechercher</label>
                     <input
@@ -128,7 +128,7 @@
                                     <div class="d-flex justify-content-end gap-1">
                                         @if ($reservation->statut === \App\Models\Reservation::STATUT_EN_ATTENTE)
                                             <form method="POST"
-                                                  action="{{ route('admin.reservations.confirmer', $reservation) }}">
+                                                  action="{{ route('admin.reservations.confirmer', $reservation) }}" novalidate>
                                                 @csrf
                                                 <button type="submit" class="btn btn-sm btn-outline-success" title="Confirmer">
                                                     <i class="bx bx-check"></i>
@@ -138,7 +138,7 @@
 
                                         @if ($reservation->statut === \App\Models\Reservation::STATUT_CONFIRMEE)
                                             <form method="POST"
-                                                  action="{{ route('admin.reservations.marquer-check-in', $reservation) }}">
+                                                  action="{{ route('admin.reservations.marquer-check-in', $reservation) }}" novalidate>
                                                 @csrf
                                                 <button type="submit" class="btn btn-sm btn-outline-info" title="Check-in">
                                                     <i class="bx bx-log-in"></i>
@@ -149,7 +149,7 @@
                                         @if (in_array($reservation->statut, [\App\Models\Reservation::STATUT_EN_ATTENTE, \App\Models\Reservation::STATUT_CONFIRMEE, \App\Models\Reservation::STATUT_LISTE_ATTENTE], true))
                                             <form method="POST"
                                                   action="{{ route('admin.reservations.annuler', $reservation) }}"
-                                                  onsubmit="return confirm('Confirmer l\\'annulation de cette réservation ?');">
+                                                  onsubmit="return confirm('Confirmer l\\'annulation de cette réservation ?');" novalidate>
                                                 @csrf
                                                 <button type="submit" class="btn btn-sm btn-outline-warning" title="Annuler">
                                                     <i class="bx bx-x"></i>
@@ -167,7 +167,7 @@
                                         </a>
                                         <form method="POST"
                                               action="{{ route('admin.reservations.destroy', $reservation) }}"
-                                              onsubmit="return confirm('Confirmer la suppression de cette réservation ?');">
+                                              onsubmit="return confirm('Confirmer la suppression de cette réservation ?');" novalidate>
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">

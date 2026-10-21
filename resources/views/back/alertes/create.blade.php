@@ -17,7 +17,7 @@
             <span class="badge bg-label-primary">Module Alertes</span>
         </div>
         <div class="card-body pt-4">
-            <form action="{{ route('admin.alertes.store') }}" method="POST">
+            <form action="{{ route('admin.alertes.store') }}" method="POST" novalidate>
                 @csrf
                 @include('back.alertes._form')
             </form>

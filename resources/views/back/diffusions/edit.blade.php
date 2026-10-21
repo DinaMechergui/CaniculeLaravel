@@ -20,7 +20,7 @@
             <span class="badge {{ $diffusion->statut_badge_class }}">{{ $diffusion->statut }}</span>
         </div>
         <div class="card-body pt-4">
-            <form action="{{ route('admin.diffusions.update', $diffusion) }}" method="POST">
+            <form action="{{ route('admin.diffusions.update', $diffusion) }}" method="POST" novalidate>
                 @csrf
                 @method('PUT')
                 @include('back.diffusions._form')

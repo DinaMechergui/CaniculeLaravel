@@ -2,7 +2,7 @@
 <h2>Informations <span>personnelles</span></h2>
 <p>Modifiez votre nom et votre adresse e-mail.</p>
 
-<form method="POST" action="{{ route('profile.update') }}" class="ve-contact-form">
+<form method="POST" action="{{ route('profile.update') }}" class="ve-contact-form" novalidate>
     @csrf
     @method('PATCH')
 

@@ -8,7 +8,7 @@
       $action            — URL de traitement du formulaire
       $method            — POST (création) ou PUT (modification)
 --}}
-<form method="POST" action="{{ $action }}">
+<form method="POST" action="{{ $action }}" novalidate>
     @csrf
     @if (strtoupper($method) !== 'POST')
         @method($method)

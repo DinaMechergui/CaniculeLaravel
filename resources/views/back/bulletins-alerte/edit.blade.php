@@ -22,7 +22,7 @@
             </span>
         </div>
         <div class="card-body pt-4">
-            <form action="{{ route('admin.bulletins-alerte.update', $bulletinAlerte) }}" method="POST">
+            <form action="{{ route('admin.bulletins-alerte.update', $bulletinAlerte) }}" method="POST" novalidate>
                 @csrf
                 @method('PUT')
                 @include('back.bulletins-alerte._form')

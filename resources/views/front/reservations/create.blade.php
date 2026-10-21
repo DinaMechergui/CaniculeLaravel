@@ -63,7 +63,7 @@
                     <h2>Vos informations</h2>
                     <p>Le créneau est réservé au nom indiqué ci-dessous. Aucun compte n'est requis.</p>
 
-                    <form method="POST" action="{{ route('reservations.store') }}" class="ve-contact-form">
+                    <form method="POST" action="{{ route('reservations.store') }}" class="ve-contact-form" novalidate>
                         @csrf
 
                         {{-- Le point concerné (fixé par la fiche du lieu). --}}

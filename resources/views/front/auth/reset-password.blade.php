@@ -16,7 +16,7 @@
                     <h2>Changer de <span>mot de passe</span></h2>
                     <p>Ce mot de passe remplace l'ancien immédiatement.</p>
 
-                    <form method="POST" action="{{ route('password.store') }}" class="ve-contact-form">
+                    <form method="POST" action="{{ route('password.store') }}" class="ve-contact-form" novalidate>
                         @csrf
 
                         <input type="hidden" name="token" value="{{ $request->route('token') }}">

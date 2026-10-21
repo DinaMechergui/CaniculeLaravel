@@ -20,7 +20,7 @@
             <span class="badge bg-label-info">Alerte #{{ $alerte->id }}</span>
         </div>
         <div class="card-body pt-4">
-            <form action="{{ route('admin.alertes.update', $alerte) }}" method="POST">
+            <form action="{{ route('admin.alertes.update', $alerte) }}" method="POST" novalidate>
                 @csrf
                 @method('PUT')
                 @include('back.alertes._form')

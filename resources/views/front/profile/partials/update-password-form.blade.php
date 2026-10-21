@@ -2,7 +2,7 @@
 <h2>Mot de <span>passe</span></h2>
 <p>Utilisez au moins 8 caractères.</p>
 
-<form method="POST" action="{{ route('password.update') }}" class="ve-contact-form">
+<form method="POST" action="{{ route('password.update') }}" class="ve-contact-form" novalidate>
     @csrf
     @method('PUT')
 

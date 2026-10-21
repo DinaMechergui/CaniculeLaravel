@@ -27,13 +27,13 @@
                         Pensez à vérifier vos spams.
                     </p>
 
-                    <form method="POST" action="{{ route('verification.send') }}" class="ve-contact-form">
+                    <form method="POST" action="{{ route('verification.send') }}" class="ve-contact-form" novalidate>
                         @csrf
                         <button type="submit" class="ve-btn-primary">Renvoyer l'e-mail de vérification</button>
                     </form>
 
                     <div class="app-card-link">
-                        <form method="POST" action="{{ route('logout') }}">
+                        <form method="POST" action="{{ route('logout') }}" novalidate>
                             @csrf
                             <button type="submit" class="app-link-button">Se déconnecter</button>
                         </form>

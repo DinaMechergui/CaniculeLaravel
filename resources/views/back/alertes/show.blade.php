@@ -226,7 +226,7 @@
                                     <a href="{{ route('admin.bulletins-alerte.edit', $bulletin) }}" class="btn btn-xs btn-outline-secondary" style="font-size: 0.8rem;">
                                         <i class="bx bx-edit me-1"></i>Modifier
                                     </a>
-                                    <form action="{{ route('admin.bulletins-alerte.destroy', $bulletin) }}" method="POST" class="d-inline" onsubmit="return confirm('Supprimer ce bulletin ?');">
+                                    <form action="{{ route('admin.bulletins-alerte.destroy', $bulletin) }}" method="POST" class="d-inline" onsubmit="return confirm('Supprimer ce bulletin ?');" novalidate>
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-xs btn-outline-danger" style="font-size: 0.8rem;" @disabled($bulletin->diffusions->isNotEmpty())>

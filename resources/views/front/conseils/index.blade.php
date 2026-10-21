@@ -17,7 +17,7 @@
             </div>
 
             {{-- Filtres : recherche + catégorie --}}
-            <form method="GET" action="{{ route('conseils.index') }}" class="form-row justify-content-center mb-4">
+            <form method="GET" action="{{ route('conseils.index') }}" class="form-row justify-content-center mb-4" novalidate>
                 <div class="col-12 col-md-5 mb-2">
                     <input type="text" name="search" value="{{ $search }}"
                            class="form-control" placeholder="Rechercher un conseil...">

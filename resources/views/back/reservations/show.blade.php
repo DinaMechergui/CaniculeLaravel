@@ -235,7 +235,7 @@
 
                     <form method="POST"
                           action="{{ route('admin.reservations.destroy', $reservation) }}"
-                          onsubmit="return confirm('Confirmer la suppression de cette réservation ?');">
+                          onsubmit="return confirm('Confirmer la suppression de cette réservation ?');" novalidate>
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-outline-danger">

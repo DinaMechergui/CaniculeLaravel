@@ -28,7 +28,7 @@
     {{-- Filtres --}}
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
-            <form method="GET" action="{{ route('admin.bulletins-alerte.index') }}" class="row g-3 align-items-end">
+            <form method="GET" action="{{ route('admin.bulletins-alerte.index') }}" class="row g-3 align-items-end" novalidate>
                 <div class="col-md-5">
                     <label class="form-label small fw-semibold">Filtrer par niveau de vigilance</label>
                     <select name="niveau" class="form-select">
@@ -141,7 +141,7 @@
                                     <a href="{{ route('admin.bulletins-alerte.edit', $bulletin) }}" class="btn btn-sm btn-outline-secondary" title="Modifier">
                                         <i class="bx bx-edit"></i>
                                     </a>
-                                    <form action="{{ route('admin.bulletins-alerte.destroy', $bulletin) }}" method="POST" class="d-inline" onsubmit="return confirm('Supprimer ce bulletin ?');">
+                                    <form action="{{ route('admin.bulletins-alerte.destroy', $bulletin) }}" method="POST" class="d-inline" onsubmit="return confirm('Supprimer ce bulletin ?');" novalidate>
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer" @disabled($bulletin->diffusions->isNotEmpty())>

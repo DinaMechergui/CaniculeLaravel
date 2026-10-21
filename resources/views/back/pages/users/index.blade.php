@@ -14,7 +14,7 @@
     {{-- Recherche --}}
     <div class="card mb-4">
         <div class="card-body">
-            <form method="GET" action="{{ route('admin.users.index') }}" class="d-flex flex-wrap gap-2 align-items-end">
+            <form method="GET" action="{{ route('admin.users.index') }}" class="d-flex flex-wrap gap-2 align-items-end" novalidate>
                 <div class="app-search-bar">
                     <label class="form-label" for="search">Rechercher</label>
                     <input
@@ -84,7 +84,7 @@
                                         @if (! auth()->user()->is($user))
                                             <form method="POST"
                                                   action="{{ route('admin.users.destroy', $user) }}"
-                                                  onsubmit="return confirm('Confirmer la suppression de cet utilisateur ?');">
+                                                  onsubmit="return confirm('Confirmer la suppression de cet utilisateur ?');" novalidate>
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">

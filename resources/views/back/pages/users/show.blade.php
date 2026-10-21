@@ -67,7 +67,7 @@
 
                     @if (! auth()->user()->is($user))
                         <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
-                              onsubmit="return confirm('Confirmer la suppression de cet utilisateur ?');">
+                              onsubmit="return confirm('Confirmer la suppression de cet utilisateur ?');" novalidate>
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-outline-danger w-100">

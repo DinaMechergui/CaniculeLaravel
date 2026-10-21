@@ -96,7 +96,7 @@
 
                     <form method="POST"
                           action="{{ route('admin.points-fraicheur.destroy', $pointFraicheur) }}"
-                          onsubmit="return confirm('Confirmer la suppression de ce point de fraîcheur ?');">
+                          onsubmit="return confirm('Confirmer la suppression de ce point de fraîcheur ?');" novalidate>
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-outline-danger w-100">

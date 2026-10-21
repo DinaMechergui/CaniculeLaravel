@@ -50,7 +50,7 @@
     {{-- Filtres --}}
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
-            <form method="GET" action="{{ route('admin.diffusions.index') }}" class="row g-3 align-items-end">
+            <form method="GET" action="{{ route('admin.diffusions.index') }}" class="row g-3 align-items-end" novalidate>
                 <div class="col-md-5">
                     <label class="form-label small fw-semibold">Filtrer par canal</label>
                     <select name="canal" class="form-select">
@@ -175,7 +175,7 @@
                                     <a href="{{ route('admin.diffusions.edit', $diff) }}" class="btn btn-sm btn-outline-secondary" title="Modifier">
                                         <i class="bx bx-edit"></i>
                                     </a>
-                                    <form action="{{ route('admin.diffusions.destroy', $diff) }}" method="POST" class="d-inline" onsubmit="return confirm('Supprimer cet enregistrement de diffusion ?');">
+                                    <form action="{{ route('admin.diffusions.destroy', $diff) }}" method="POST" class="d-inline" onsubmit="return confirm('Supprimer cet enregistrement de diffusion ?');" novalidate>
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">

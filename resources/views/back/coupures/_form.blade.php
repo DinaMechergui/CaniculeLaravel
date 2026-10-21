@@ -1,4 +1,4 @@
-<form method="POST" action="{{ $action }}" id="form-coupure">
+<form method="POST" action="{{ $action }}" id="form-coupure" novalidate>
     @csrf
     @if (strtoupper($method) !== 'POST')
         @method($method)

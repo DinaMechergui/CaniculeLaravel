@@ -13,7 +13,7 @@
 
     <div class="card">
         <div class="card-body">
-            <form method="POST" action="{{ route('admin.users.update', $user) }}">
+            <form method="POST" action="{{ route('admin.users.update', $user) }}" novalidate>
                 @csrf
                 @method('PUT')
 

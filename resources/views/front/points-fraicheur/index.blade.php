@@ -22,7 +22,7 @@
             </div>
 
             {{-- Filtres : recherche + type --}}
-            <form method="GET" action="{{ route('points-fraicheur.index') }}" class="pf-filters">
+            <form method="GET" action="{{ route('points-fraicheur.index') }}" class="pf-filters" novalidate>
                 <div class="pf-filter-field">
                     <i class="fa fa-search" aria-hidden="true"></i>
                     <input

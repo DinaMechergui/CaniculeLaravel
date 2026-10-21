@@ -41,7 +41,7 @@
             <span class="badge bg-label-primary">{{ $coupures->total() }} résultat(s)</span>
         </div>
         <div class="card-body pt-2">
-            <form method="GET" action="{{ route('admin.coupures.index') }}">
+            <form method="GET" action="{{ route('admin.coupures.index') }}" novalidate>
                 <div class="row g-3">
                     <div class="col-12 col-lg-4">
                         <label class="form-label" for="search">Recherche globale</label>
@@ -158,7 +158,7 @@
                                     <div class="d-inline-flex justify-content-end gap-1">
                                         <a href="{{ route('admin.coupures.show', $coupure) }}" class="btn btn-sm btn-icon btn-outline-secondary" title="Voir" aria-label="Voir la coupure {{ $coupure->id }}"><i class="bx bx-show"></i></a>
                                         <a href="{{ route('admin.coupures.edit', $coupure) }}" class="btn btn-sm btn-icon btn-outline-primary" title="Modifier" aria-label="Modifier la coupure {{ $coupure->id }}"><i class="bx bx-edit"></i></a>
-                                        <form method="POST" action="{{ route('admin.coupures.destroy', $coupure) }}" onsubmit="return confirm('Confirmer la suppression de cette coupure ?');">
+                                        <form method="POST" action="{{ route('admin.coupures.destroy', $coupure) }}" onsubmit="return confirm('Confirmer la suppression de cette coupure ?');" novalidate>
                                             @csrf @method('DELETE')
                                             <button class="btn btn-sm btn-icon btn-outline-danger" title="Supprimer" aria-label="Supprimer la coupure {{ $coupure->id }}"><i class="bx bx-trash"></i></button>
                                         </form>

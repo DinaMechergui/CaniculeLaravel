@@ -11,7 +11,7 @@
             <form method="POST"
                   action="{{ route('admin.diagnostics.destroy', $diagnostic) }}"
                   class="d-inline"
-                  onsubmit="return confirm('Supprimer définitivement ce diagnostic ?');">
+                  onsubmit="return confirm('Supprimer définitivement ce diagnostic ?');" novalidate>
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-outline-danger">

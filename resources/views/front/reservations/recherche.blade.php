@@ -25,7 +25,7 @@
                 <div class="ve-contact-form-wrap">
                     <h2>Critères de recherche</h2>
 
-                    <form method="POST" action="{{ route('reservations.recherche.trouver') }}" class="ve-contact-form">
+                    <form method="POST" action="{{ route('reservations.recherche.trouver') }}" class="ve-contact-form" novalidate>
                         @csrf
                         <x-form-input
                             name="code"

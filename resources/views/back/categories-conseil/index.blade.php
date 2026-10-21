@@ -47,7 +47,7 @@
                                         </a>
                                         <form method="POST"
                                               action="{{ route('admin.categories-conseil.destroy', $categorie) }}"
-                                              onsubmit="return confirm('Confirmer la suppression de cette catégorie ?');">
+                                              onsubmit="return confirm('Confirmer la suppression de cette catégorie ?');" novalidate>
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">

@@ -43,7 +43,7 @@
 
                     <form method="POST"
                           action="{{ route('admin.types-point.destroy', $typePoint) }}"
-                          onsubmit="return confirm('Confirmer la suppression de ce type de point ?');">
+                          onsubmit="return confirm('Confirmer la suppression de ce type de point ?');" novalidate>
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-outline-danger w-100">

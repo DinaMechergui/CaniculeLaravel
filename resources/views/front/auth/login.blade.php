@@ -16,7 +16,7 @@
                     <h2>Bonjour <span>!</span></h2>
                     <p>Connectez-vous pour continuer.</p>
 
-                    <form method="POST" action="{{ route('login') }}" class="ve-contact-form">
+                    <form method="POST" action="{{ route('login') }}" class="ve-contact-form" novalidate>
                         @csrf
 
                         <x-form-input

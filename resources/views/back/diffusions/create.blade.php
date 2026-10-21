@@ -17,7 +17,7 @@
             <span class="badge bg-label-primary">Module complémentaire Diffusions</span>
         </div>
         <div class="card-body pt-4">
-            <form action="{{ route('admin.diffusions.store') }}" method="POST">
+            <form action="{{ route('admin.diffusions.store') }}" method="POST" novalidate>
                 @csrf
                 @include('back.diffusions._form')
             </form>

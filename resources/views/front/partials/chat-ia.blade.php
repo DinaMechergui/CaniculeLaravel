@@ -44,7 +44,7 @@
     </div>
 
     {{-- Saisie --}}
-    <form class="ai-form" id="{{ $chatId }}-form" method="POST" action="{{ route('assistant.chat') }}" autocomplete="off">
+    <form class="ai-form" id="{{ $chatId }}-form" method="POST" action="{{ route('assistant.chat') }}" autocomplete="off" novalidate>
         @csrf
 
         <label class="sr-only" for="{{ $chatId }}-input">Votre message</label>

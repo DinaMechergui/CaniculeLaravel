@@ -14,7 +14,7 @@
     {{-- Recherche --}}
     <div class="card mb-4">
         <div class="card-body">
-            <form method="GET" action="{{ route('admin.conseils.index') }}" class="d-flex flex-wrap gap-2 align-items-end">
+            <form method="GET" action="{{ route('admin.conseils.index') }}" class="d-flex flex-wrap gap-2 align-items-end" novalidate>
                 <div class="app-search-bar">
                     <label class="form-label" for="search">Rechercher</label>
                     <input type="text" class="form-control" id="search" name="search"
@@ -64,7 +64,7 @@
                                         </a>
                                         <form method="POST"
                                               action="{{ route('admin.conseils.destroy', $conseil) }}"
-                                              onsubmit="return confirm('Confirmer la suppression de ce conseil ?');">
+                                              onsubmit="return confirm('Confirmer la suppression de ce conseil ?');" novalidate>
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">

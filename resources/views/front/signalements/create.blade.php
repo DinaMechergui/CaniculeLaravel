@@ -23,7 +23,7 @@
 
             <div style="max-width:680px;margin:0 auto;">
                 <div class="pf-detail-card wow fadeInUp">
-                    <form method="POST" action="{{ route('signalements.store') }}">
+                    <form method="POST" action="{{ route('signalements.store') }}" novalidate>
                         @csrf
 
                         {{-- Champ caché requis par la validation (forcé à 'nouveau' par le contrôleur) --}}

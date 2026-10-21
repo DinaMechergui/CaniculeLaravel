@@ -73,7 +73,7 @@
                     <i class="fa fa-user"></i> {{ auth()->user()->name }}
                 </span>
 
-                <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                <form method="POST" action="{{ route('logout') }}" class="d-inline" novalidate>
                     @csrf
                     <button type="submit" class="ve-cta-btn" title="Se déconnecter">
                         Déconnexion
@@ -139,7 +139,7 @@
                     <li><a href="{{ route('admin.dashboard') }}">Back Office</a></li>
                 @endif
                 <li>
-                    <form method="POST" action="{{ route('logout') }}">
+                    <form method="POST" action="{{ route('logout') }}" novalidate>
                         @csrf
                         <button type="submit" class="ve-mobile-logout">Déconnexion</button>
                     </form>

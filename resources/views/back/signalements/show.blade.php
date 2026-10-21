@@ -98,7 +98,7 @@
                     </a>
                     <form method="POST"
                           action="{{ route('admin.signalements.destroy', $signalement) }}"
-                          onsubmit="return confirm('Confirmer la suppression de ce signalement ?');">
+                          onsubmit="return confirm('Confirmer la suppression de ce signalement ?');" novalidate>
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-outline-danger w-100">

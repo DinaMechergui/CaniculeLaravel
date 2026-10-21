@@ -20,7 +20,7 @@
             <span class="badge bg-label-primary">{{ $quartiers->total() }} résultat(s)</span>
         </div>
         <div class="card-body pt-2">
-            <form method="GET" action="{{ route('admin.quartiers.index') }}">
+            <form method="GET" action="{{ route('admin.quartiers.index') }}" novalidate>
                 <div class="row g-3">
                     <div class="col-12 col-lg-4">
                         <label class="form-label" for="search">Recherche globale</label>
@@ -103,7 +103,7 @@
                                     <div class="d-inline-flex justify-content-end gap-1">
                                         <a href="{{ route('admin.quartiers.show', $quartier) }}" class="btn btn-sm btn-icon btn-outline-secondary" title="Voir" aria-label="Voir {{ $quartier->nom }}"><i class="bx bx-show"></i></a>
                                         <a href="{{ route('admin.quartiers.edit', $quartier) }}" class="btn btn-sm btn-icon btn-outline-primary" title="Modifier" aria-label="Modifier {{ $quartier->nom }}"><i class="bx bx-edit"></i></a>
-                                        <form method="POST" action="{{ route('admin.quartiers.destroy', $quartier) }}" onsubmit="return confirm('Confirmer la suppression de ce quartier ?');">
+                                        <form method="POST" action="{{ route('admin.quartiers.destroy', $quartier) }}" onsubmit="return confirm('Confirmer la suppression de ce quartier ?');" novalidate>
                                             @csrf @method('DELETE')
                                             <button class="btn btn-sm btn-icon btn-outline-danger" title="Supprimer" aria-label="Supprimer {{ $quartier->nom }}"><i class="bx bx-trash"></i></button>
                                         </form>

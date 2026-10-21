@@ -10,7 +10,7 @@
         @endforeach
     </div>
     <div class="card mb-4"><div class="card-body">
-        <form method="GET" action="{{ route('admin.impacts-coupures.index') }}" class="row g-3 align-items-end">
+        <form method="GET" action="{{ route('admin.impacts-coupures.index') }}" class="row g-3 align-items-end" novalidate>
             <div class="col-12 col-md-4"><label class="form-label" for="search">Structure</label><input class="form-control" id="search" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Nom de la structure"></div>
             <div class="col-12 col-md-4"><label class="form-label" for="quartier_id">Quartier</label><select class="form-select" id="quartier_id" name="quartier_id"><option value="">Tous</option>@foreach($quartiers as $quartier)<option value="{{ $quartier->id }}" @selected((string) ($filters['quartier_id'] ?? '') === (string) $quartier->id)>{{ $quartier->nom }}</option>@endforeach</select></div>
             <div class="col-12 col-md-4"><label class="form-label" for="coupure_id">Coupure</label><select class="form-select" id="coupure_id" name="coupure_id"><option value="">Toutes</option>@foreach($coupures as $coupure)<option value="{{ $coupure->id }}" @selected((string) ($filters['coupure_id'] ?? '') === (string) $coupure->id)>#{{ $coupure->id }} · {{ $coupure->quartier?->nom }}</option>@endforeach</select></div>
@@ -31,7 +31,7 @@
                     <td><span class="badge {{ ['moyen' => 'bg-info', 'eleve' => 'bg-warning text-dark', 'critique' => 'bg-danger'][$impact->niveau_gravite] }}">{{ ucfirst($impact->niveau_gravite) }}</span></td>
                     <td>{{ number_format($impact->personnes_affectees, 0, ',', ' ') }}</td>
                     <td><span class="badge {{ $impact->statut === 'resolu' ? 'bg-success' : 'bg-primary' }}">{{ str_replace('_', ' ', ucfirst($impact->statut)) }}</span></td>
-                    <td class="text-end"><div class="d-inline-flex gap-1"><a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.impacts-coupures.show', $impact) }}" aria-label="Voir"><i class="bx bx-show"></i></a><a class="btn btn-sm btn-outline-primary" href="{{ route('admin.impacts-coupures.edit', $impact) }}" aria-label="Modifier"><i class="bx bx-edit"></i></a><form method="POST" action="{{ route('admin.impacts-coupures.destroy', $impact) }}" onsubmit="return confirm('Confirmer la suppression de cet impact ?')">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger" aria-label="Supprimer"><i class="bx bx-trash"></i></button></form></div></td>
+                    <td class="text-end"><div class="d-inline-flex gap-1"><a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.impacts-coupures.show', $impact) }}" aria-label="Voir"><i class="bx bx-show"></i></a><a class="btn btn-sm btn-outline-primary" href="{{ route('admin.impacts-coupures.edit', $impact) }}" aria-label="Modifier"><i class="bx bx-edit"></i></a><form method="POST" action="{{ route('admin.impacts-coupures.destroy', $impact) }}" onsubmit="return confirm('Confirmer la suppression de cet impact ?')" novalidate>@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger" aria-label="Supprimer"><i class="bx bx-trash"></i></button></form></div></td>
                 </tr>
             @empty<tr><td colspan="7" class="text-center text-muted py-4">Aucun impact trouvé.</td></tr>@endforelse
         </tbody>

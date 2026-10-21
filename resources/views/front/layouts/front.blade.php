@@ -48,6 +48,15 @@
     <script src="{{ asset('assets/front/js/active.js') }}"></script>
     <script src="{{ asset('assets/front/js/vaultedge.js') }}"></script>
 
+    {{-- Désactivation globale de la validation native HTML5 pour laisser le contrôle aux validations serveur Laravel --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('form').forEach(function(form) {
+                form.setAttribute('novalidate', 'novalidate');
+            });
+        });
+    </script>
+
     @stack('scripts')
 </body>
 

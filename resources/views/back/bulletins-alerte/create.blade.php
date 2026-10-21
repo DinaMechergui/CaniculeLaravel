@@ -17,7 +17,7 @@
             <span class="badge bg-label-primary">Cycle de vie de l'alerte</span>
         </div>
         <div class="card-body pt-4">
-            <form action="{{ route('admin.bulletins-alerte.store') }}" method="POST">
+            <form action="{{ route('admin.bulletins-alerte.store') }}" method="POST" novalidate>
                 @csrf
                 @include('back.bulletins-alerte._form')
             </form>

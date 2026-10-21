@@ -104,7 +104,8 @@
                             <form method="POST"
                                   action="{{ route('reservations.annuler', $reservation->code) }}"
                                   style="display:inline-block;"
-                                  onsubmit="return confirm('Confirmer l\'annulation de cette réservation ?');">
+                                  onsubmit="return confirm('Confirmer l\'annulation de cette réservation ?');"
+                                  novalidate>
                                 @csrf
                                 <button type="submit" class="ve-btn-ghost">
                                     <i class="fa fa-times" aria-hidden="true"></i> Annuler ma réservation

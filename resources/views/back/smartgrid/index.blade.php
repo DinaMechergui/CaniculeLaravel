@@ -29,7 +29,7 @@
     <div class="row g-4">
         <div class="col-12 col-xl-8">
             <div class="card mb-4"><div class="card-header"><h5 class="mb-0">Filtres cartographiques</h5></div><div class="card-body">
-                <form id="sg-filters" class="row g-3 align-items-end">
+                <form id="sg-filters" class="row g-3 align-items-end" novalidate>
                     <div class="col-6 col-lg-4"><label class="form-label" for="sg-quartier">Quartier</label><select class="form-select" id="sg-quartier" name="quartier_id"><option value="">Tous</option>@foreach($quartiers as $quartier)<option value="{{ $quartier->id }}">{{ $quartier->nom }}</option>@endforeach</select></div>
                     <div class="col-6 col-lg-4"><label class="form-label" for="sg-ville">Ville</label><select class="form-select" id="sg-ville" name="ville"><option value="">Toutes</option>@foreach($quartiers->pluck('ville')->unique()->sort() as $ville)<option value="{{ $ville }}">{{ $ville }}</option>@endforeach</select></div>
                     <div class="col-6 col-lg-4"><label class="form-label" for="sg-type">Type</label><select class="form-select" id="sg-type" name="type"><option value="">Tous</option><option value="delestage">Délestage</option><option value="panne">Panne</option><option value="surcharge">Surcharge</option></select></div>

@@ -28,7 +28,7 @@
     {{-- Filtres et recherche --}}
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
-            <form method="GET" action="{{ route('admin.alertes.index') }}" class="row g-3 align-items-end">
+            <form method="GET" action="{{ route('admin.alertes.index') }}" class="row g-3 align-items-end" novalidate>
                 <div class="col-md-4">
                     <label class="form-label small fw-semibold">Recherche par mot-clé</label>
                     <div class="input-group">
@@ -167,7 +167,7 @@
                                     <a href="{{ route('admin.alertes.edit', $alerte) }}" class="btn btn-sm btn-outline-secondary" title="Modifier">
                                         <i class="bx bx-edit"></i>
                                     </a>
-                                    <form action="{{ route('admin.alertes.destroy', $alerte) }}" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette alerte ?');">
+                                    <form action="{{ route('admin.alertes.destroy', $alerte) }}" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette alerte ?');" novalidate>
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer" @disabled($alerte->bulletins_count > 0)>
