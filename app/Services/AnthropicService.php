@@ -41,11 +41,49 @@ class AnthropicService
         if (! is_string($content) || trim($content) === '') {
             throw new AnthropicInvalidResponseException('Le service IA a renvoyé une réponse vide.');
         }
+        $raw = preg_replace('/^\xEF\xBB\xBF/', '', trim($content));
+        $decoded = null;
+
+        // 1. Essai direct
         try {
-            $decoded = json_decode(trim($content), true, 512, JSON_THROW_ON_ERROR);
+            $decoded = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException) {
+            // 2. Extraction du bloc markdown ```json ... ``` ou ``` ... ```
+            if (preg_match('/```(?:json)?\s*([\s\S]*?)\s*```/i', $raw, $matches)) {
+                $block = trim($matches[1]);
+                try {
+                    $decoded = json_decode($block, true, 512, JSON_THROW_ON_ERROR);
+                } catch (JsonException) {
+                    $cleanedBlock = preg_replace('/,\s*([\}\]])/', '$1', $block);
+                    try {
+                        $decoded = json_decode($cleanedBlock, true, 512, JSON_THROW_ON_ERROR);
+                    } catch (JsonException) {}
+                }
+            }
+
+            // 3. Extraction du premier objet JSON {...}
+            if ($decoded === null && preg_match('/\{[\s\S]*\}/', $raw, $matches)) {
+                $cleaned = $matches[0];
+                try {
+                    $decoded = json_decode($cleaned, true, 512, JSON_THROW_ON_ERROR);
+                } catch (JsonException) {
+                    $cleaned = preg_replace('/,\s*([\}\]])/', '$1', $cleaned);
+                    try {
+                        $decoded = json_decode($cleaned, true, 512, JSON_THROW_ON_ERROR);
+                    } catch (JsonException) {}
+                }
+            }
+        }
+
+        if ($decoded === null) {
             throw new AnthropicInvalidResponseException('La réponse IA n’est pas un JSON valide.');
         }
+
+        // Si l'IA a emballé le dictionnaire dans une liste à un élément : [{...}]
+        if (is_array($decoded) && array_is_list($decoded) && count($decoded) === 1 && is_array($decoded[0]) && ! array_is_list($decoded[0])) {
+            $decoded = $decoded[0];
+        }
+
         if (! is_array($decoded) || array_is_list($decoded)) {
             throw new AnthropicInvalidResponseException('La réponse IA ne respecte pas le format attendu.');
         }

@@ -172,6 +172,29 @@
             </a>
         </li>
 
+        {{-- Module « Supervision & Monitoring » --}}
+        <li class="menu-header small text-uppercase">
+            <span class="menu-header-text">Supervision</span>
+        </li>
+        <li class="menu-item">
+            <a href="http://localhost:3000" class="menu-link" target="_blank" rel="noopener noreferrer">
+                <i class="menu-icon tf-icons bx bx-line-chart"></i>
+                <div data-i18n="Grafana">Grafana (Port 3000)</div>
+            </a>
+        </li>
+        <li class="menu-item">
+            <a href="http://localhost:9090" class="menu-link" target="_blank" rel="noopener noreferrer">
+                <i class="menu-icon tf-icons bx bx-pulse"></i>
+                <div data-i18n="Prometheus">Prometheus (Port 9090)</div>
+            </a>
+        </li>
+        <li class="menu-item">
+            <a href="{{ route('metrics') }}" class="menu-link" target="_blank">
+                <i class="menu-icon tf-icons bx bx-code-alt"></i>
+                <div data-i18n="Métriques">Métriques (/metrics)</div>
+            </a>
+        </li>
+
         {{-- Accès au site public --}}
         <li class="menu-header small text-uppercase">
             <span class="menu-header-text">Site</span>

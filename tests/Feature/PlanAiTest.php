@@ -60,4 +60,92 @@ class PlanAiTest extends TestCase
         $this->postJson('/plans-urgence/'.$plan->id.'/ia',['action'=>'traduire'])->assertOk()->assertJsonPath('dir','rtl');
         $this->assertSame('Plan original',$plan->fresh()->titre);
     }
+
+    public function test_plan_ai_accepts_steps_with_accented_moments_and_long_texts(): void
+    {
+        config(['services.openrouter.key'=>'test-key','services.openrouter.model'=>'test-model']);
+        $longTitle = str_repeat('Titre d’étape détaillé ', 10); // > 150 chars
+        $longDesc = str_repeat('Description très complète avec beaucoup de détails pour le foyer. ', 15); // > 500 chars
+
+        $steps = [];
+        for ($i = 0; $i < 9; $i++) {
+            $steps[] = [
+                'titre' => $longTitle,
+                'description' => $longDesc,
+                'moment' => ($i % 3 === 0 ? 'Avant' : ($i % 3 === 1 ? 'Pendant' : 'Après')), // with accent and uppercase
+                'obligatoire' => ($i % 2 === 0 ? 'true' : 'false'), // string booleans
+            ];
+        }
+
+        Http::fake(['openrouter.ai/*' => Http::response(['choices' => [['message' => ['content' => json_encode([
+            'titre' => str_repeat('Titre du plan ', 20), // > 150 chars
+            'description' => str_repeat('Description du plan ', 60), // > 1000 chars
+            'etapes' => $steps,
+        ])]]]], 200)]);
+
+        $response = $this->actingAs(User::factory()->admin()->create())
+            ->postJson('/admin/plans-urgence/ia', [
+                'action' => 'generer',
+                'type_evenement' => 'canicule',
+                'niveau_risque' => 'eleve',
+                'public_cible' => 'tous',
+            ])
+            ->assertOk();
+
+        $this->assertLessThanOrEqual(150, mb_strlen($response->json('titre')));
+        $this->assertLessThanOrEqual(1000, mb_strlen($response->json('description')));
+
+        $returnedSteps = $response->json('etapes');
+        $this->assertCount(9, $returnedSteps);
+        foreach ($returnedSteps as $step) {
+            $this->assertLessThanOrEqual(150, mb_strlen($step['titre']));
+            $this->assertLessThanOrEqual(500, mb_strlen($step['description']));
+            $this->assertContains($step['moment'], ['avant', 'pendant', 'apres']);
+            $this->assertIsBool($step['obligatoire']);
+        }
+    }
+
+    public function test_plan_ai_auto_completes_if_fewer_than_eight_steps(): void
+    {
+        config(['services.openrouter.key'=>'test-key','services.openrouter.model'=>'test-model']);
+
+        Http::fake(['openrouter.ai/*' => Http::response(['choices' => [['message' => ['content' => json_encode([
+            'titre' => 'Plan court',
+            'description' => 'Description courte.',
+            'etapes' => $this->etapes(4),
+        ])]]]], 200)]);
+
+        $response = $this->actingAs(User::factory()->admin()->create())
+            ->postJson('/admin/plans-urgence/ia', [
+                'action' => 'generer',
+                'type_evenement' => 'canicule',
+                'niveau_risque' => 'modere',
+                'public_cible' => 'tous',
+            ])
+            ->assertOk();
+
+        $this->assertGreaterThanOrEqual(8, count($response->json('etapes')));
+    }
+
+    public function test_plan_ai_slices_if_more_than_twelve_steps(): void
+    {
+        config(['services.openrouter.key'=>'test-key','services.openrouter.model'=>'test-model']);
+
+        Http::fake(['openrouter.ai/*' => Http::response(['choices' => [['message' => ['content' => json_encode([
+            'titre' => 'Plan très long',
+            'description' => 'Description.',
+            'etapes' => $this->etapes(15),
+        ])]]]], 200)]);
+
+        $response = $this->actingAs(User::factory()->admin()->create())
+            ->postJson('/admin/plans-urgence/ia', [
+                'action' => 'generer',
+                'type_evenement' => 'canicule',
+                'niveau_risque' => 'modere',
+                'public_cible' => 'tous',
+            ])
+            ->assertOk();
+
+        $this->assertCount(12, $response->json('etapes'));
+    }
 }

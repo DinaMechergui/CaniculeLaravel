@@ -33,16 +33,78 @@ class PlanAiController extends Controller
         }
     }
 
-    public function transformer(TransformationPlanRequest $request,PlanUrgence $planUrgence,AnthropicService $ia): JsonResponse
+    public function transformer(TransformationPlanRequest $request, PlanUrgence $planUrgence, AnthropicService $ia): JsonResponse
     {
-        abort_unless($planUrgence->actif,404);
-        $d=$request->validated(); $translation=$d['action']==='traduire';
+        abort_unless($planUrgence->actif, 404);
+        $d = $request->validated();
+        $translation = $d['action'] === 'traduire';
         try {
-            $r=$ia->json($translation?'Traduis en arabe le plan, sans modifier les données. Retourne titre, description et etapes.':'Réécris ce plan en français facile à lire, sans modifier les données. Retourne titre, description et etapes.',json_encode(['titre'=>$planUrgence->titre,'description'=>$planUrgence->description,'etapes'=>$planUrgence->etapes()->get(['titre','description','moment','obligatoire'])],JSON_UNESCAPED_UNICODE),3000);
-            if(!isset($r['titre'],$r['description'],$r['etapes'])||!is_string($r['titre'])||mb_strlen($r['titre'])>300||!is_string($r['description'])||mb_strlen($r['description'])>2000||!is_array($r['etapes'])||count($r['etapes'])!==$planUrgence->etapes()->count()) throw new AnthropicInvalidResponseException('La version transformée reçue est invalide.');
-            foreach($r['etapes'] as $step) if(!isset($step['titre'],$step['moment'])||!is_string($step['titre'])||mb_strlen($step['titre'])>300||!in_array($step['moment'],['avant','pendant','apres'],true)||isset($step['description'])&&(!is_string($step['description'])||mb_strlen($step['description'])>1000)) throw new AnthropicInvalidResponseException('Une étape transformée est invalide.');
-            return response()->json(array_merge($r,['dir'=>$translation?'rtl':'ltr']));
-        } catch (AnthropicUnavailableException $e) { return response()->json(['message'=>$e->getMessage()],503); }
-        catch (AnthropicInvalidResponseException $e) { return response()->json(['message'=>$e->getMessage()],502); }
+            $r = $ia->json(
+                $translation
+                    ? 'Traduis en arabe le plan, sans modifier les données. Retourne titre, description et etapes.'
+                    : 'Réécris ce plan en français facile à lire, sans modifier les données. Retourne titre, description et etapes.',
+                json_encode([
+                    'titre' => $planUrgence->titre,
+                    'description' => $planUrgence->description,
+                    'etapes' => $planUrgence->etapes()->get(['titre', 'description', 'moment', 'obligatoire'])
+                ], JSON_UNESCAPED_UNICODE),
+                3000
+            );
+
+            if (isset($r['plan']) && is_array($r['plan'])) {
+                $r = array_merge($r['plan'], $r);
+            }
+
+            if (! isset($r['titre']) || ! is_string($r['titre']) || trim($r['titre']) === '') {
+                $r['titre'] = $planUrgence->titre;
+            }
+            if (mb_strlen($r['titre']) > 300) {
+                $r['titre'] = mb_substr($r['titre'], 0, 300);
+            }
+
+            if (! isset($r['description']) || ! is_string($r['description'])) {
+                $r['description'] = (string) $planUrgence->description;
+            }
+            if (mb_strlen($r['description']) > 2000) {
+                $r['description'] = mb_substr($r['description'], 0, 2000);
+            }
+
+            $rawEtapes = $r['etapes'] ?? [];
+            if (! is_array($rawEtapes) || empty($rawEtapes)) {
+                throw new AnthropicInvalidResponseException('La version transformée reçue est invalide.');
+            }
+
+            $etapes = [];
+            $originalEtapes = $planUrgence->etapes()->get();
+            foreach ($rawEtapes as $i => $step) {
+                if (! is_array($step)) continue;
+                $titre = trim((string)($step['titre'] ?? ''));
+                if ($titre === '') $titre = 'Étape ' . ($i + 1);
+                if (mb_strlen($titre) > 300) $titre = mb_substr($titre, 0, 300);
+
+                $desc = trim((string)($step['description'] ?? ''));
+                if (mb_strlen($desc) > 1000) $desc = mb_substr($desc, 0, 1000);
+
+                $mRaw = mb_strtolower(trim((string)($step['moment'] ?? '')));
+                if (str_contains($mRaw, 'av')) $moment = 'avant';
+                elseif (str_contains($mRaw, 'ap')) $moment = 'apres';
+                elseif (str_contains($mRaw, 'pen')) $moment = 'pendant';
+                else $moment = $originalEtapes[$i]->moment ?? 'pendant';
+
+                $etapes[] = [
+                    'titre' => $titre,
+                    'description' => $desc,
+                    'moment' => $moment,
+                    'obligatoire' => filter_var($step['obligatoire'] ?? ($originalEtapes[$i]->obligatoire ?? false), FILTER_VALIDATE_BOOLEAN),
+                ];
+            }
+
+            $r['etapes'] = $etapes;
+            return response()->json(array_merge($r, ['dir' => $translation ? 'rtl' : 'ltr']));
+        } catch (AnthropicUnavailableException $e) {
+            return response()->json(['message' => $e->getMessage()], 503);
+        } catch (AnthropicInvalidResponseException $e) {
+            return response()->json(['message' => $e->getMessage()], 502);
+        }
     }
 }

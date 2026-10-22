@@ -1,0 +1,27 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+
+scrape_configs:
+  # 1. Prometheus auto-supervision
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # 2. Application Laravel DevSpark (Module Alerte Canicule & Métier)
+  - job_name: 'laravel_devspark'
+    metrics_path: '/metrics'
+    scrape_interval: 5s
+    scrape_timeout: 4s
+    static_configs:
+      - targets: ['host.docker.internal:8005']
+        labels:
+          environment: 'local'
+          app: 'devspark'
+
+  # 3. Métriques MySQL (si mysqld-exporter est actif)
+  - job_name: 'mysql'
+    static_configs:
+      - targets: ['devspark_mysql_exporter:9104']
+        labels:
+          service: 'database'

@@ -25,3 +25,5 @@ Thumbs.db
 /.scannerwork
 /coverage.xml
 /reports
+/storage/framework/metrics
+

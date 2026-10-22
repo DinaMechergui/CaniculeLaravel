@@ -12,6 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Mesure automatique des requêtes pour Prometheus & Grafana
+        $middleware->append(\App\Http\Middleware\PrometheusMetricsMiddleware::class);
+
         // Alias du middleware "admin" : back office réservé aux administrateurs.
         $middleware->alias([
             'admin' => AdminMiddleware::class,

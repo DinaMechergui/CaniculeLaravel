@@ -17,3 +17,6 @@
 
 require __DIR__.'/front.php';
 require __DIR__.'/back.php';
+
+// Point de terminaison pour la collecte Prometheus
+Route::get('/metrics', \App\Http\Controllers\MetricsController::class)->name('metrics');
