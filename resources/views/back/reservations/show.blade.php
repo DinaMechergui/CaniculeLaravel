@@ -144,8 +144,14 @@
         {{-- Analyse IA --}}
         <div class="col-lg-6 mb-4">
             <div class="card h-100">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0"><i class="bx bx-brain me-1"></i> Analyse IA</h5>
+                    <form action="{{ route('admin.reservations.analyser-ia', $reservation) }}" method="POST" class="d-inline mb-0" novalidate>
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-outline-primary" title="Recalculer les étiquettes et le score de risque">
+                            <i class="bx bx-refresh me-1"></i> Réanalyser avec l'IA
+                        </button>
+                    </form>
                 </div>
                 <div class="card-body">
                     <div class="row mb-3">

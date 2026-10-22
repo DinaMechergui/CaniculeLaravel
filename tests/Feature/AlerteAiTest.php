@@ -224,4 +224,40 @@ class AlerteAiTest extends TestCase
         $respD->assertOk();
         $this->assertEquals('OpenRouter GPT-4o-mini (IA Cloud)', $respD->json('provider'));
     }
+
+    public function test_ai_bulletin_temperature_scale_complies_with_rules(): void
+    {
+        $alerte = Alerte::factory()->enCours()->create([
+            'zone_concernee' => 'Mourouj',
+        ]);
+
+        $cases = [
+            'morouj 27' => 'vert',
+            'tunis 20°C' => 'vert',
+            'sfax 30' => 'vert',
+            'mourouj 35' => 'jaune',
+            'bizerte 39' => 'jaune',
+            'tozeur 42' => 'rouge',
+            'kairouan 46°C' => 'rouge',
+            'tabarka 15°C' => 'jaune',
+            'zaghouan 10' => 'jaune',
+            'ain draham 8' => 'rouge',
+            'kef 4°C' => 'rouge',
+        ];
+
+        foreach ($cases as $keywords => $expectedLevel) {
+            $response = $this->actingAs($this->admin)->postJson(route('admin.bulletins-alerte.ia.generer'), [
+                'alerte_id' => $alerte->id,
+                'keywords' => $keywords,
+            ]);
+
+            $response->assertOk();
+            $data = $response->json();
+            $this->assertEquals(
+                $expectedLevel,
+                $data['niveau'],
+                "Échec pour '{$keywords}' : attendu {$expectedLevel}, obtenu {$data['niveau']}"
+            );
+        }
+    }
 }

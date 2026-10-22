@@ -48,10 +48,25 @@ class DashboardService
         $total = (clone $query)->count();
         $personnes = (int) (clone $query)->sum('nombre_personnes');
         $attente = (clone $query)->where('statut', Reservation::STATUT_LISTE_ATTENTE)->count();
-        $terminees = (clone $query)->where('statut', Reservation::STATUT_TERMINEE)->count();
-        $noShow = (clone $query)->where('statut', Reservation::STATUT_NO_SHOW)->count();
+        $terminees = (clone $query)->where(function ($q) {
+            $q->where('statut', Reservation::STATUT_TERMINEE)
+              ->orWhereNotNull('check_in_le');
+        })->count();
+        $noShow = (clone $query)->where(function ($q) {
+            $q->where('statut', Reservation::STATUT_NO_SHOW)
+              ->orWhere('statut', Reservation::STATUT_EXPIREE)
+              ->orWhere(function ($sub) {
+                  $sub->where('statut', Reservation::STATUT_CONFIRMEE)
+                      ->whereNull('check_in_le')
+                      ->whereDate('date_reservation', '<', now()->toDateString());
+              });
+        })->count();
         $annulees = (clone $query)->where('statut', Reservation::STATUT_ANNULEE)->count();
         $risque = (clone $query)->whereNotNull('score_risque_no_show')->avg('score_risque_no_show');
+
+        if ($risque === null && $total > 0) {
+            $risque = Reservation::whereNotNull('score_risque_no_show')->avg('score_risque_no_show');
+        }
 
         Dashboard::updateOrCreate(
             [

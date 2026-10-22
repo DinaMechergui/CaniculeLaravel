@@ -39,20 +39,36 @@
 
                     <h1 class="h2 fw-bold text-dark mb-3">{{ $alerte->titre }}</h1>
 
-                    <div class="row g-3 text-muted small mb-4 py-3 border-top border-bottom">
-                        <div class="col-sm-6 col-md-3">
-                            <i class="fa fa-map-marker text-danger me-1"></i>
-                            <strong>Zone :</strong> {{ $alerte->zone_concernee }}
+                    {{-- Bannière Zone géographique mise en valeur --}}
+                    <div class="p-3 rounded-3 mb-4 d-flex align-items-center" style="background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%); border: 1px solid #fee2e2; border-left: 5px solid #dc2626; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.05);">
+                        <span class="d-inline-flex align-items-center justify-content-center rounded-circle me-3 flex-shrink-0" style="width: 42px; height: 42px; background: #fee2e2; color: #dc2626;">
+                            <i class="fa fa-map-marker fs-5"></i>
+                        </span>
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="text-uppercase fw-bold text-danger" style="font-size: 0.72rem; letter-spacing: 0.8px;">
+                                    <i class="fa fa-crosshairs me-1"></i>Périmètre géographique sous alerte
+                                </span>
+                                <span class="badge bg-danger text-white px-2 py-0.5" style="font-size: 0.65rem;">
+                                    Zone à risque
+                                </span>
+                            </div>
+                            <div class="h5 fw-bold text-dark mb-0" style="line-height: 1.4;">
+                                {{ $alerte->zone_concernee }}
+                            </div>
                         </div>
-                        <div class="col-sm-6 col-md-3">
+                    </div>
+
+                    <div class="row g-3 text-muted small mb-4 py-3 border-top border-bottom">
+                        <div class="col-sm-6 col-md-4">
                             <i class="fa fa-calendar-check-o text-primary me-1"></i>
                             <strong>Début :</strong> {{ $alerte->date_debut->format('d/m/Y H:i') }}
                         </div>
-                        <div class="col-sm-6 col-md-3">
+                        <div class="col-sm-6 col-md-4">
                             <i class="fa fa-clock-o text-info me-1"></i>
                             <strong>Fin prévue :</strong> {{ $alerte->date_fin ? $alerte->date_fin->format('d/m/Y H:i') : 'Indéterminée (en cours)' }}
                         </div>
-                        <div class="col-sm-6 col-md-3">
+                        <div class="col-sm-6 col-md-4">
                             <i class="fa fa-building text-secondary me-1"></i>
                             <strong>Source :</strong> {{ $alerte->source ?? 'Autorités officielles' }}
                         </div>

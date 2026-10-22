@@ -52,16 +52,31 @@ class ReservationController extends Controller
     /**
      * Détail d'une réservation.
      *
-     * La création se fait côté front office (sur la fiche du point) : il n'y a
-     * donc pas de méthode « create » ni « store » dans le back office.
+     * Si l'analyse IA n'a jamais été exécutée (ex. réservation créée sans worker ou issue d'un seeder),
+     * elle est déclenchée automatiquement pour afficher immédiatement les indicateurs IA.
      */
-    public function show(Reservation $reservation): View
+    public function show(Reservation $reservation, ReservationAiService $ia): View
     {
         $reservation->load('pointFraicheur.type');
+
+        if ($reservation->score_risque_no_show === null) {
+            $ia->analyser($reservation);
+            $reservation->refresh();
+        }
 
         return view('back.reservations.show', [
             'reservation' => $reservation,
         ]);
+    }
+
+    /**
+     * Déclenchement manuel ou réanalyse avec l'IA.
+     */
+    public function analyserIa(Reservation $reservation, ReservationAiService $ia): RedirectResponse
+    {
+        $ia->analyser($reservation);
+
+        return back()->with('success', "L'analyse IA de la réservation {$reservation->code} a été effectuée avec succès.");
     }
 
     /**
@@ -297,9 +312,26 @@ class ReservationController extends Controller
             ->limit(14)
             ->get();
 
+        $totalResas14j = $indicateurs->sum('total_reservations');
+        $presencePonderee = $totalResas14j > 0
+            ? round($indicateurs->sum(fn ($i) => $i->total_reservations * (float) $i->taux_presence) / $totalResas14j, 2)
+            : 0.0;
+        $noShowPondere = $totalResas14j > 0
+            ? round($indicateurs->sum(fn ($i) => $i->total_reservations * (float) $i->taux_no_show) / $totalResas14j, 2)
+            : 0.0;
+
+        $scoresValides = $indicateurs->whereNotNull('score_risque_moyen');
+        $scoreMoyenPondere = $scoresValides->isNotEmpty()
+            ? round($scoresValides->avg('score_risque_moyen'), 2)
+            : round((float) (Reservation::whereNotNull('score_risque_no_show')->avg('score_risque_no_show') ?? 25.0), 2);
+
         return view('back.reservations.analytique', [
             'previsions' => $previsions,
             'indicateurs' => $indicateurs,
+            'totalResas14j' => $totalResas14j,
+            'presencePonderee' => $presencePonderee,
+            'noShowPondere' => $noShowPondere,
+            'scoreMoyenPondere' => $scoreMoyenPondere,
         ]);
     }
 

@@ -19,39 +19,49 @@
         @endslot
     </x-page-header>
 
-    @php $dernier = $indicateurs->first(); @endphp
+    @php
+        $dernier = $indicateurs->first();
+        $totalAfficher = $totalResas14j ?? ($dernier?->total_reservations ?? 0);
+        $presenceAfficher = $presencePonderee ?? ($dernier?->taux_presence ?? 0);
+        $noShowAfficher = $noShowPondere ?? ($dernier?->taux_no_show ?? 0);
+        $scoreAfficher = $scoreMoyenPondere ?? ($dernier?->score_risque_moyen ?? 25.0);
+    @endphp
 
-    {{-- Indicateurs du jour --}}
+    {{-- Indicateurs consolidés (14 jours) --}}
     <div class="row">
         <div class="col-md-3 mb-4">
-            <div class="card text-center h-100">
+            <div class="card text-center h-100 shadow-sm border-0">
                 <div class="card-body">
-                    <div class="text-muted mb-1">Réservations (dernier jour)</div>
-                    <h3 class="mb-0">{{ $dernier?->total_reservations ?? 0 }}</h3>
+                    <div class="text-muted small fw-semibold mb-1">Réservations (14 derniers jours)</div>
+                    <h3 class="mb-1 fw-bold text-dark">{{ $totalAfficher }}</h3>
+                    <small class="text-muted">Dernier jour : {{ $dernier?->total_reservations ?? 0 }} résa(s)</small>
                 </div>
             </div>
         </div>
         <div class="col-md-3 mb-4">
-            <div class="card text-center h-100">
+            <div class="card text-center h-100 shadow-sm border-0">
                 <div class="card-body">
-                    <div class="text-muted mb-1">Taux de présence</div>
-                    <h3 class="mb-0">{{ $dernier?->taux_presence ?? 0 }}%</h3>
+                    <div class="text-muted small fw-semibold mb-1">Taux de présence global</div>
+                    <h3 class="mb-1 fw-bold text-success">{{ number_format($presenceAfficher, 2) }}%</h3>
+                    <small class="text-muted">Moyenne sur la période</small>
                 </div>
             </div>
         </div>
         <div class="col-md-3 mb-4">
-            <div class="card text-center h-100">
+            <div class="card text-center h-100 shadow-sm border-0">
                 <div class="card-body">
-                    <div class="text-muted mb-1">Taux de non-présentation</div>
-                    <h3 class="mb-0 text-danger">{{ $dernier?->taux_no_show ?? 0 }}%</h3>
+                    <div class="text-muted small fw-semibold mb-1">Taux de non-présentation</div>
+                    <h3 class="mb-1 fw-bold text-danger">{{ number_format($noShowAfficher, 2) }}%</h3>
+                    <small class="text-muted">Non honorées / expirées</small>
                 </div>
             </div>
         </div>
         <div class="col-md-3 mb-4">
-            <div class="card text-center h-100">
+            <div class="card text-center h-100 shadow-sm border-0">
                 <div class="card-body">
-                    <div class="text-muted mb-1">Score de risque moyen</div>
-                    <h3 class="mb-0">{{ $dernier?->score_risque_moyen ?? '—' }}</h3>
+                    <div class="text-muted small fw-semibold mb-1">Score de risque moyen (IA)</div>
+                    <h3 class="mb-1 fw-bold text-primary">{{ number_format($scoreAfficher, 2) }}%</h3>
+                    <small class="text-muted">Calculé par le modèle IA</small>
                 </div>
             </div>
         </div>

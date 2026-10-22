@@ -20,13 +20,17 @@ class AlerteAiService
     public function generateBulletin(Alerte $alerte, ?string $keywords = null): array
     {
         $dernierBulletin = $alerte->dernierBulletin;
-        $prevLevel = $dernierBulletin?->niveau ?? 'jaune';
+        $prevLevel = $dernierBulletin?->niveau ?? ($alerte->niveau_actuel !== 'gris' ? $alerte->niveau_actuel : 'jaune');
+        $extractedTemp = $this->extractTemperature($keywords);
 
         $apiKey = config('services.gemini.key') ?? env('GEMINI_API_KEY');
         if (!empty($apiKey)) {
             try {
                 $result = $this->callGeminiForBulletin($alerte, $keywords, $apiKey);
                 if ($result) {
+                    if (empty($result['temperature_max']) && $extractedTemp !== null) {
+                        $result['temperature_max'] = $extractedTemp;
+                    }
                     return $this->formatBulletinResult($result, $prevLevel, 'Google Gemini 1.5 Flash (IA Cloud)');
                 }
             } catch (\Throwable $e) {
@@ -39,6 +43,9 @@ class AlerteAiService
             try {
                 $result = $this->callOpenRouterForBulletin($alerte, $keywords, $openRouterKey);
                 if ($result) {
+                    if (empty($result['temperature_max']) && $extractedTemp !== null) {
+                        $result['temperature_max'] = $extractedTemp;
+                    }
                     return $this->formatBulletinResult($result, $prevLevel, 'OpenRouter GPT-4o-mini (IA Cloud)');
                 }
             } catch (\Throwable $e) {
@@ -104,6 +111,12 @@ class AlerteAiService
             . "- Zone concernée : {$alerte->zone_concernee}\n"
             . "- Dernier niveau de vigilance connu : " . ($alerte->niveau_actuel ?? 'jaune') . "\n"
             . "- Contexte / observations : " . ($keywords ?: 'Maintien de la vigilance météo') . "\n\n"
+            . "BARÈME OBLIGATOIRE DE VIGILANCE SELON LA TEMPÉRATURE MAXIMALE (°C) :\n"
+            . "- Moins de 10°C (< 10°C) : niveau \"rouge\" (vague de grand froid extrême / gel critique)\n"
+            . "- Moins de 20°C (10°C à 19°C) : niveau \"jaune\" (fraîcheur marquée / vigilance)\n"
+            . "- Entre 20°C et 30°C : niveau \"vert\" (température normale, agréable, sans risque météorologique)\n"
+            . "- Plus de 30°C (31°C à 39°C) : niveau \"jaune\" (chaleur sensible, vigilance modérée)\n"
+            . "- Plus de 39°C (> 39°C) : niveau \"rouge\" (canicule extrême critique, danger mortel)\n\n"
             . "Réponds STRICTEMENT au format JSON avec ces champs exacts :\n"
             . "{\n"
             . "  \"niveau\": \"vert|jaune|orange|rouge\",\n"
@@ -118,7 +131,8 @@ class AlerteAiService
 
     protected function callOpenRouterForBulletin(Alerte $alerte, ?string $keywords, string $apiKey): ?array
     {
-        $system = "Réponds UNIQUEMENT en JSON avec : niveau (vert|jaune|orange|rouge), evolution (aggravation|stable|amelioration|levee), message, conduite_a_tenir, temperature_max (int ou null).";
+        $system = "Tu es un expert INM Tunisie. Réponds UNIQUEMENT en JSON avec : niveau (vert|jaune|orange|rouge), evolution (aggravation|stable|amelioration|levee), message, conduite_a_tenir, temperature_max (int ou null).\n"
+            . "BARÈME TEMPÉRATURE OBLIGATOIRE : <10°C=rouge, 10-19°C=jaune, 20-30°C=vert, 31-39°C=jaune, >39°C=rouge.";
         $user = "Expert INM Tunisie. Bulletin météo pour alerte {$alerte->titre} ({$alerte->zone_concernee}), type {$alerte->type_label}, niveau actuel {$alerte->niveau_actuel}. Mots-clés : " . ($keywords ?: 'vigilance');
 
         return $this->requestOpenRouterJson($system, $user, $apiKey, 0.3);
@@ -215,39 +229,105 @@ class AlerteAiService
     |--------------------------------------------------------------------------
     */
 
+    /**
+     * Extrait intelligemment une température (°C) depuis une chaîne de caractères libre.
+     */
+    public function extractTemperature(?string $text): ?int
+    {
+        if (!$text) {
+            return null;
+        }
+
+        // 1. Mentions explicites avec unité (°C, °, degrés, degre)
+        if (preg_match('/(?<![\d\-\+])(\d{1,2})\s*(?:°c|°|degres|degre)\b/i', $text, $m)) {
+            return (int) $m[1];
+        }
+
+        // 2. Températures négatives éventuelles (-5°C)
+        if (preg_match('/-\s*(\d{1,2})/i', $text, $m)) {
+            return -(int) $m[1];
+        }
+
+        // 3. Nombre isolé entre 0 et 59 non entouré de délimiteurs de date/heure (/ ou :)
+        if (preg_match('/(?<![\d\/:\-])([0-5]?\d)(?![\d\/:\-])/', $text, $m)) {
+            return (int) $m[1];
+        }
+
+        return null;
+    }
+
     protected function generateLocalBulletin(Alerte $alerte, ?string $keywords, string $prevLevel): array
     {
         $kw = mb_strtolower((string) $keywords);
         $zone = $alerte->zone_concernee;
         $type = $alerte->type;
 
-        // Détection de température dans le texte
-        preg_match('/(\d{1,2})\s*(°c|degres|c)?/i', (string) $keywords, $matches);
-        $temp = isset($matches[1]) ? (int) $matches[1] : ($type === 'canicule' ? 44 : null);
+        // Extraction de la température saisie
+        $temp = $this->extractTemperature($keywords);
 
-        // Détermination logique de l'évolution et du niveau
-        if (str_contains($kw, 'fin') || str_contains($kw, 'normal') || str_contains($kw, 'levee') || str_contains($kw, 'calme')) {
-            $evolution = 'levee';
-            $niveau = 'vert';
-            $message = "Fin de vigilance météorologique sur {$zone}. Les paramètres observés sont revenus aux normales saisonnières.";
-            $conduite = "Les restrictions et consignes d'urgence sont levées. Reprise normale de toutes les activités.";
-        } elseif (str_contains($kw, 'aggrav') || str_contains($kw, 'pire') || str_contains($kw, 'record') || str_contains($kw, 'danger') || ($temp && $temp >= 45)) {
-            $evolution = 'aggravation';
-            $niveau = 'rouge';
-            $message = "VIGILANCE MAXIMALE - INM TUNISIE : Aggravation critique de la situation sur {$zone}."
-                . ($temp ? " Maximales attendues jusqu'à {$temp}°C avec sirocco violent." : " Phénomène d'intensité majeure en cours.");
-            $conduite = "Restez confinés dans des zones fraîches ou climatisées. Évitez tout déplacement non urgent. Urgences : 198 (Protection Civile) ou 190 (SAMU).";
-        } elseif (str_contains($kw, 'amelior') || str_contains($kw, 'baisse') || str_contains($kw, 'brise')) {
-            $evolution = 'amelioration';
-            $niveau = ($prevLevel === 'rouge') ? 'orange' : 'jaune';
-            $message = "Amélioration progressive des conditions météo sur {$zone}. Le pic d'intensité commence à faiblir.";
-            $conduite = "Maintenez la prudence. Continuez d'hydrater les personnes vulnérables en attendant le retour au calme complet.";
+        // Si une température est renseignée, application stricte du barème météo demandé
+        if ($temp !== null) {
+            if ($temp < 10) {
+                // Moins de 10°C : Grand froid / gel critique -> Rouge
+                $niveau = 'rouge';
+                $evolution = ($prevLevel === 'rouge') ? 'stable' : 'aggravation';
+                $message = "VIGILANCE ROUGE - GRAND FROID SUR {$zone} : Températures critiques anormalement basses ({$temp}°C) avec risque élevé de gelées sévères et d'exposition au froid intense.";
+                $conduite = "Limitez strictement les déplacements extérieurs. Risque majeur d'hypothermie pour les publics vulnérables et sans-abri. Signalez toute détresse au 198 (Protection Civile).";
+            } elseif ($temp < 20) {
+                // Moins de 20°C (10 à 19°C) : Fraîcheur / vigilance modérée -> Jaune
+                $niveau = 'jaune';
+                $evolution = in_array($prevLevel, ['rouge', 'orange']) ? 'amelioration' : 'stable';
+                $message = "Vigilance météorologique sur {$zone} : Baisse des températures observée à {$temp}°C. Fraîcheur sensible nécessitant une attention pour les publics fragiles.";
+                $conduite = "Habillez-vous chaudement, vérifiez le bon fonctionnement des appareils de chauffage sans boucher les aérations et soyez vigilants au 198.";
+            } elseif ($temp <= 30) {
+                // Entre 20°C et 30°C : Température normale / agréable -> Vert
+                $niveau = 'vert';
+                $evolution = in_array($prevLevel, ['jaune', 'orange', 'rouge']) ? 'levee' : 'stable';
+                $message = "Conditions météorologiques douces et favorables sur {$zone}. Les températures relevées ({$temp}°C) se situent dans les normales de saison, sans aucun risque météorologique particulier.";
+                $conduite = "Aucune restriction particulière. Poursuite normale des activités quotidiennes et des déplacements.";
+            } elseif ($temp <= 39) {
+                // Plus de 30°C jusqu'à 39°C : Chaleur sensible -> Jaune (ou Orange si mot-clé explicite)
+                $isOrange = str_contains($kw, 'orange') || str_contains($kw, 'tres chaud') || ($temp >= 36 && $prevLevel === 'orange');
+                $niveau = $isOrange ? 'orange' : 'jaune';
+                $evolution = ($prevLevel === 'rouge') ? 'amelioration' : (($prevLevel === 'vert') ? 'aggravation' : 'stable');
+                $message = "Vigilance jaune sur {$zone} : Hausse des températures atteignant {$temp}°C. Chaleur d'été marquée nécessitant une vigilance modérée pour la population.";
+                $conduite = "Buvez de l'eau régulièrement, évitez l'exposition directe au soleil aux heures les plus chaudes et prenez soin des personnes sensibles.";
+            } else {
+                // Plus de 39°C : Canicule extrême -> Rouge
+                $niveau = 'rouge';
+                $evolution = ($prevLevel === 'rouge') ? 'stable' : 'aggravation';
+                $message = "VIGILANCE MAXIMALE - CANICULE EXTRÊME SUR {$zone} : Températures caniculaires critiques dépassant 39°C (maximales attendues jusqu'à {$temp}°C) avec sirocco violent. Risque sanitaire et d'incendie majeur.";
+                $conduite = "Restez confinés dans des zones fraîches ou climatisées. Évitez tout effort physique à l'extérieur. Hydratez-vous en continu. Urgences : 198 (Protection Civile) ou 190 (SAMU).";
+            }
         } else {
-            // Évolution stable par défaut
-            $evolution = 'stable';
-            $niveau = in_array($prevLevel, ['jaune', 'orange', 'rouge']) ? $prevLevel : 'orange';
-            $message = "Situation météorologique stationnaire sur {$zone}. Les conditions restent sensibles et nécessitent une attention soutenue.";
-            $conduite = "Fermez les fenêtres aux heures les plus chaudes, buvez de l'eau régulièrement et surveillez les prochains bulletins de l'INM.";
+            // Pas de température détectée : analyse sémantique des mots-clés
+            if (str_contains($kw, 'fin') || str_contains($kw, 'normal') || str_contains($kw, 'levee') || str_contains($kw, 'calme')) {
+                $evolution = 'levee';
+                $niveau = 'vert';
+                $message = "Fin de vigilance météorologique sur {$zone}. Les paramètres observés sont revenus aux normales saisonnières.";
+                $conduite = "Les restrictions et consignes d'urgence sont levées. Reprise normale de toutes les activités.";
+            } elseif (str_contains($kw, 'aggrav') || str_contains($kw, 'pire') || str_contains($kw, 'record') || str_contains($kw, 'danger') || str_contains($kw, 'rouge')) {
+                $evolution = 'aggravation';
+                $niveau = 'rouge';
+                $message = "VIGILANCE MAXIMALE - INM TUNISIE : Aggravation critique de la situation sur {$zone}. Phénomène d'intensité majeure en cours.";
+                $conduite = "Restez confinés dans des zones fraîches ou climatisées. Évitez tout déplacement non urgent. Urgences : 198 (Protection Civile) ou 190 (SAMU).";
+            } elseif (str_contains($kw, 'orange') || str_contains($kw, 'fort') || str_contains($kw, 'severe')) {
+                $evolution = ($prevLevel === 'rouge') ? 'amelioration' : 'aggravation';
+                $niveau = 'orange';
+                $message = "Vigilance orange sur {$zone} : Phénomène météo dangereux en cours nécessitant une très grande vigilance.";
+                $conduite = "Tenez-vous informés de l'évolution de la situation et suivez les conseils de sécurité de la Protection Civile.";
+            } elseif (str_contains($kw, 'amelior') || str_contains($kw, 'baisse') || str_contains($kw, 'brise')) {
+                $evolution = 'amelioration';
+                $niveau = ($prevLevel === 'rouge') ? 'orange' : 'jaune';
+                $message = "Amélioration progressive des conditions météo sur {$zone}. Le pic d'intensité commence à faiblir.";
+                $conduite = "Maintenez la prudence. Continuez d'hydrater les personnes vulnérables en attendant le retour au calme complet.";
+            } else {
+                // Évolution stable par défaut
+                $evolution = 'stable';
+                $niveau = in_array($prevLevel, ['jaune', 'orange', 'rouge']) ? $prevLevel : 'jaune';
+                $message = "Situation météorologique stationnaire sur {$zone}. Les conditions restent sensibles et nécessitent une attention soutenue.";
+                $conduite = "Surveillez les prochains bulletins officiels de l'INM, buvez de l'eau régulièrement et respectez les consignes de sécurité.";
+            }
         }
 
         return [
@@ -306,6 +386,8 @@ class AlerteAiService
 
     protected function formatBulletinResult(array $data, string $prevLevel, string $provider): array
     {
+        $temp = isset($data['temperature_max']) && is_numeric($data['temperature_max']) ? (int) $data['temperature_max'] : null;
+
         $niveau = strtolower($data['niveau'] ?? 'jaune');
         if (!in_array($niveau, ['vert', 'jaune', 'orange', 'rouge'])) {
             $niveau = 'jaune';
@@ -316,7 +398,28 @@ class AlerteAiService
             $evolution = 'stable';
         }
 
-        // Règle métier : si aggravation, le rang doit être >= au niveau précédent
+        // RÈGLE MÉTIER TEMPÉRATURE (Garantit le barème strict quel que soit le provider IA) :
+        // < 10°C : rouge | 10 à < 20°C : jaune | 20 à 30°C : vert | > 30 à 39°C : jaune | > 39°C : rouge
+        if ($temp !== null) {
+            if ($temp < 10) {
+                $niveau = 'rouge';
+            } elseif ($temp < 20) {
+                $niveau = 'jaune';
+            } elseif ($temp <= 30) {
+                $niveau = 'vert';
+                if ($evolution === 'aggravation') {
+                    $evolution = in_array($prevLevel, ['jaune', 'orange', 'rouge']) ? 'levee' : 'stable';
+                }
+            } elseif ($temp <= 39) {
+                if ($niveau === 'rouge' || $niveau === 'vert') {
+                    $niveau = 'jaune';
+                }
+            } else { // > 39
+                $niveau = 'rouge';
+            }
+        }
+
+        // Règle métier : si aggravation, le rang doit être >= au niveau précédent (sauf si vert)
         $ranks = BulletinAlerte::NIVEAU_RANKS;
         if ($evolution === 'aggravation' && isset($ranks[$prevLevel], $ranks[$niveau])) {
             if ($ranks[$niveau] < $ranks[$prevLevel]) {
@@ -337,7 +440,7 @@ class AlerteAiService
             'evolution_label' => BulletinAlerte::EVOLUTIONS[$evolution] ?? ucfirst($evolution),
             'message' => (string) ($data['message'] ?? 'Bulletin météorologique officiel.'),
             'conduite_a_tenir' => (string) ($data['conduite_a_tenir'] ?? 'Respecter les consignes de prudence de la Protection Civile.'),
-            'temperature_max' => !empty($data['temperature_max']) ? (int) $data['temperature_max'] : null,
+            'temperature_max' => $temp,
             'provider' => $provider,
         ];
     }

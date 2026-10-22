@@ -101,13 +101,31 @@
                                     </a>
                                 </h3>
 
-                                <div class="mb-3 text-muted small">
-                                    <span class="me-3">
-                                        <i class="fa fa-map-marker text-danger me-1"></i><strong>Zone :</strong> {{ $alerte->zone_concernee }}
-                                    </span>
-                                    <span>
-                                        <i class="fa fa-clock-o text-muted me-1"></i>Depuis le {{ $alerte->date_debut->format('d/m/Y à H:i') }}
-                                    </span>
+                                {{-- Bloc Zone géographique mise en valeur --}}
+                                <div class="p-2.5 px-3 rounded-3 mb-2.5" style="background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%); border: 1px solid #fee2e2; border-left: 4px solid #ef4444; box-shadow: 0 1px 3px rgba(239, 68, 68, 0.06);">
+                                    <div class="d-flex align-items-center">
+                                        <span class="d-inline-flex align-items-center justify-content-center rounded-circle me-2.5 flex-shrink-0" style="width: 32px; height: 32px; background: #fee2e2; color: #dc2626;">
+                                            <i class="fa fa-map-marker fs-6"></i>
+                                        </span>
+                                        <div class="flex-grow-1 min-w-0">
+                                            <div class="d-flex align-items-center justify-content-between mb-0.5">
+                                                <span class="text-uppercase fw-bold text-danger" style="font-size: 0.68rem; letter-spacing: 0.8px;">
+                                                    <i class="fa fa-crosshairs me-1"></i>Zone concernée
+                                                </span>
+                                                <span class="badge bg-white text-danger border border-danger-subtle px-1.5 py-0.5" style="font-size: 0.65rem;">
+                                                    Périmètre à risque
+                                                </span>
+                                            </div>
+                                            <div class="fw-bold text-dark" style="font-size: 0.95rem; line-height: 1.35; word-break: break-word;">
+                                                {{ $alerte->zone_concernee }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3 text-muted small d-flex align-items-center">
+                                    <i class="fa fa-clock-o text-secondary me-1.5"></i>
+                                    <span>Débutée le {{ $alerte->date_debut->format('d/m/Y à H:i') }}</span>
                                 </div>
 
                                 <p class="text-secondary small mb-3 line-clamp-2">
