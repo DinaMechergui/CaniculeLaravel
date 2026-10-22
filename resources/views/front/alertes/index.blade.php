@@ -16,15 +16,44 @@
                 </p>
             </div>
 
+            {{-- Barre de recherche --}}
+            <form method="GET" action="{{ route('alertes.index') }}" class="pf-filters mb-4" novalidate id="alertes-search-form">
+                @if (!empty($selectedType))
+                    <input type="hidden" name="type" value="{{ $selectedType }}">
+                @endif
+
+                <div class="pf-filter-field" style="flex: 1 1 380px;">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                    <input
+                        type="text"
+                        name="search"
+                        id="alertes-search-input"
+                        value="{{ $search }}"
+                        placeholder="Rechercher par titre, ville ou zone (ex: Tunis, Bizerte)..."
+                        autocomplete="off"
+                    >
+                </div>
+
+                <button type="submit" class="ve-btn-primary">
+                    <i class="fa fa-search me-1"></i> Rechercher
+                </button>
+
+                @if (!empty($search) || !empty($selectedType))
+                    <a href="{{ route('alertes.index') }}" class="pf-reset">
+                        <i class="fa fa-times me-1"></i> Réinitialiser
+                    </a>
+                @endif
+            </form>
+
             {{-- Filtres par type d'événement --}}
             <div class="d-flex justify-content-center flex-wrap gap-2 mb-4">
-                <a href="{{ route('alertes.index') }}"
-                   class="btn btn-sm rounded-pill px-3 py-2 {{ empty($selectedType) ? 'btn-primary' : 'btn-outline-secondary' }}">
+                <a href="{{ route('alertes.index', array_filter(['search' => $search])) }}"
+                   class="btn btn-sm rounded-pill px-3 py-2 {{ empty($selectedType) ? 'btn-primary shadow-sm' : 'btn-outline-secondary' }}">
                     <i class="fa fa-th-large me-1"></i> Toutes les alertes
                 </a>
                 @foreach ($types as $key => $label)
-                    <a href="{{ route('alertes.index', ['type' => $key]) }}"
-                       class="btn btn-sm rounded-pill px-3 py-2 {{ $selectedType === $key ? 'btn-primary' : 'btn-outline-secondary' }}">
+                    <a href="{{ route('alertes.index', array_filter(['type' => $key, 'search' => $search])) }}"
+                       class="btn btn-sm rounded-pill px-3 py-2 {{ $selectedType === $key ? 'btn-primary shadow-sm' : 'btn-outline-secondary' }}">
                         {{ $label }}
                     </a>
                 @endforeach
@@ -52,7 +81,7 @@
                         };
                     @endphp
 
-                    <div class="col-lg-6">
+                    <div class="col-lg-6 alerte-card-col">
                         <article class="card h-100 shadow-sm border-0 rounded-3 overflow-hidden position-relative" style="background: #ffffff; {{ $borderStyle }}">
                             <div class="card-body p-4">
                                 <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
@@ -116,12 +145,25 @@
                 @empty
                     <div class="col-12 text-center py-5">
                         <div class="p-5 bg-white rounded-3 shadow-sm border">
-                            <i class="fa fa-shield text-success fa-4x mb-3 d-block"></i>
-                            <h4 class="fw-bold text-success mb-2">Aucune alerte majeure en cours</h4>
-                            <p class="text-muted mb-0">
-                                La situation est stable sur l'ensemble des zones surveillées.
-                                Nos services maintiennent une veille permanente 24h/24.
-                            </p>
+                            @if (!empty($search) || !empty($selectedType))
+                                <i class="fa fa-search text-warning fa-3x mb-3 d-block"></i>
+                                <h4 class="fw-bold text-dark mb-2">Aucune alerte trouvée</h4>
+                                <p class="text-muted mb-3">
+                                    Aucune alerte ne correspond à votre recherche
+                                    @if(!empty($search)) pour <strong>« {{ $search }} »</strong>@endif
+                                    @if(!empty($selectedType)) dans la catégorie <strong>{{ $types[$selectedType] ?? $selectedType }}</strong>@endif.
+                                </p>
+                                <a href="{{ route('alertes.index') }}" class="btn btn-outline-primary">
+                                    <i class="fa fa-refresh me-1"></i> Réinitialiser les filtres
+                                </a>
+                            @else
+                                <i class="fa fa-shield text-success fa-4x mb-3 d-block"></i>
+                                <h4 class="fw-bold text-success mb-2">Aucune alerte majeure en cours</h4>
+                                <p class="text-muted mb-0">
+                                    La situation est stable sur l'ensemble des zones surveillées.
+                                    Nos services maintiennent une veille permanente 24h/24.
+                                </p>
+                            @endif
                         </div>
                     </div>
                 @endforelse
@@ -136,3 +178,40 @@
         </div>
     </section>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('alertes-search-input');
+        if (!searchInput) return;
+
+        // Filtrage instantané sur les cartes affichées
+        searchInput.addEventListener('input', function () {
+            const query = this.value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.alerte-card-col');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                const matches = query === '' || text.includes(query);
+                card.style.display = matches ? '' : 'none';
+                if (matches) visibleCount++;
+            });
+
+            let liveEmptyMsg = document.getElementById('live-empty-message');
+            if (visibleCount === 0 && cards.length > 0) {
+                if (!liveEmptyMsg) {
+                    liveEmptyMsg = document.createElement('div');
+                    liveEmptyMsg.id = 'live-empty-message';
+                    liveEmptyMsg.className = 'col-12 text-center py-4';
+                    liveEmptyMsg.innerHTML = '<div class="p-4 bg-white rounded-3 shadow-sm border text-muted"><i class="fa fa-search fa-2x mb-2 text-warning d-block"></i>Aucune alerte ne correspond à cette saisie sur cette page.<br><small class="text-muted">Appuyez sur Entrée ou cliquez sur « Rechercher » pour lancer une recherche complète dans la base.</small></div>';
+                    cards[0].parentElement.appendChild(liveEmptyMsg);
+                }
+                liveEmptyMsg.style.display = '';
+            } else if (liveEmptyMsg) {
+                liveEmptyMsg.style.display = 'none';
+            }
+        });
+    });
+</script>
+@endpush

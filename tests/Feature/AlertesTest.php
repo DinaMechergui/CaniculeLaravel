@@ -298,4 +298,28 @@ class AlertesTest extends TestCase
         $custom = new Alerte(['type' => 'phenomene_inconnu']);
         $this->assertEquals('Phenomene inconnu', $custom->type_label);
     }
+
+    public function test_front_search_by_zone_or_description_or_query(): void
+    {
+        Alerte::factory()->create([
+            'titre' => 'Vague de chaleur Saharienne',
+            'zone_concernee' => 'Tozeur et Kebili',
+            'description' => 'Températures extrêmes dans le sud',
+            'statut' => 'en_cours',
+        ]);
+        Alerte::factory()->create([
+            'titre' => 'Alerte inondation Nord',
+            'zone_concernee' => 'Bizerte et Jendouba',
+            'description' => 'Fortes précipitations attendues',
+            'statut' => 'en_cours',
+        ]);
+
+        $resZone = $this->get(route('alertes.index', ['search' => 'Tozeur']))->assertOk();
+        $resZone->assertSee('Vague de chaleur Saharienne');
+        $resZone->assertDontSee('Alerte inondation Nord');
+
+        $resQ = $this->get(route('alertes.index', ['q' => 'précipitations']))->assertOk();
+        $resQ->assertSee('Alerte inondation Nord');
+        $resQ->assertDontSee('Vague de chaleur Saharienne');
+    }
 }

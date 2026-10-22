@@ -20,6 +20,15 @@ class AlerteController extends Controller
             $query->where('type', $request->query('type'));
         }
 
+        $search = trim((string) $request->input('search', $request->input('q', '')));
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('titre', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('zone_concernee', 'like', "%{$search}%");
+            });
+        }
+
         // Tri par gravité du niveau de vigilance du dernier bulletin
         // rouge (4) > orange (3) > jaune (2) > vert (1) > autre (0)
         $alertes = $query->get()->sortByDesc(function (Alerte $alerte) {
@@ -44,6 +53,7 @@ class AlerteController extends Controller
             'alertes' => $paginated,
             'selectedType' => $selectedType,
             'types' => $types,
+            'search' => $search,
         ]);
     }
 
